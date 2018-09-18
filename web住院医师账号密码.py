@@ -117,7 +117,7 @@ def main():
     with codecs.open('zyys.sql','w','utf-8') as f2:
         f2.write(tou + zhongzhi + wei)
 
-    print ('OK')
+    print ('完成')
 
 
 main()
