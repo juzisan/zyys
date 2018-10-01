@@ -27,7 +27,6 @@ from pandas.tseries.offsets import *
 import numpy as np
 from openpyxl import Workbook
 from openpyxl import load_workbook
-from openpyxl.compat import range
 from openpyxl.utils import get_column_letter
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.styles import Alignment,Border,Side,Font
