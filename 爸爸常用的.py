@@ -45,7 +45,6 @@ def duo(shangdir):
     for i in range(len(biaotou)):#目的是删除多余的列。生成每题分值dict
         if biaotou[i].find(' - 得分') > 0:
             tim = biaotou[i][:biaotou[i].find(' - 得分')]#.replace(r'·','')
-            print (tim)
             tizhi[tim] = int(re.search(r'共(\d+)分', biaotou[i]).group(1))
             biaotou[i] = tim
         elif biaotou[i].find(' - 作答') > 0:
