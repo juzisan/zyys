@@ -45,6 +45,7 @@ def duo(shangdir):
     for i in range(len(biaotou)):#目的是删除多余的列。生成每题分值dict
         if biaotou[i].find(' - 得分') > 0:
             tim = biaotou[i][:biaotou[i].find(' - 得分')]#.replace(r'·','')
+            print (tim)
             tizhi[tim] = int(re.search(r'共(\d+)分', biaotou[i]).group(1))
             biaotou[i] = tim
         elif biaotou[i].find(' - 作答') > 0:
@@ -107,27 +108,28 @@ def main():
         for row in rows:#不知道为啥有空行。openpyxl的序号从1开始。delete_rows()
             if len(row) >2:
                 ws.append(row)
-        ws.column_dimensions['A'].width = 3#设置列宽
-        ws.column_dimensions['B'].width = 9
+        ws.column_dimensions['A'].width = 4#设置列宽
+        ws.column_dimensions['B'].width = 11
         for i in range(3,ws.max_column):#最大列数目，是整数类型
-            ws.column_dimensions[get_column_letter(i)].width = 5
-        ws.column_dimensions[get_column_letter(ws.max_column)].width = 6
+            ws.column_dimensions[get_column_letter(i)].width = 6
+        ws.column_dimensions[get_column_letter(ws.max_column)].width = 7
         for i in list(ws.rows)[0]:#生成器转list才能迭代，第一行
             i.alignment = Alignment(wrap_text=True)#设置文本自动换行
         for row in ws.rows:
             for cell in row:
                 cell.border =thin_border#设置边框
+                cell.font = Font(size=13)
 
         ws.insert_rows(1)#插入标题行
         ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=ws.max_column)#合并标题行
-        p_title = file_name.split('.')[0]
-        ws['A1'] = p_title
+
+        ws['A1'] = file_name.split('.')[0]
         ws['A1'].alignment = Alignment(horizontal='center')#设置标题居中
         ws['A1'].font = Font(size=20)#设置字号大小
 
     std=wb.get_sheet_by_name('Sheet')
     wb.remove_sheet(std)#删除默认sheet，保存文件
-    wb.save(somedir[:-1]+'6个班.xlsx')#excel写入sheat
+    wb.save(somedir[:-1]+'6个班.xlsx')#excel写入sheet
 
 
 #数据区
