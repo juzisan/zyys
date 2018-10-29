@@ -75,6 +75,7 @@ def main():
     ws.page_margins.bottom = 0.2
     ws.page_margins.header = 0
     ws.page_margins.footer = 0#设置页边距
+    ws.print_title_cols = 'A:A'
     ws.delete_rows(3)
 
     for row in ws.rows:
@@ -82,16 +83,16 @@ def main():
             cell.border =thin_border#设置边框
 
     ws.insert_rows(1)#插入标题行
-    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=ws.max_column)#合并标题行
+    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=20)#合并标题行
     p_title = '九年_________考试教学质量分析统计表（数学）'
     ws['A1'] = p_title
     ws['A1'].alignment = Alignment(horizontal='center')#设置标题居中
     ws['A1'].font = Font(size=20)#设置字号大小
     ws['A3'] = '班级'
 
-    ws.column_dimensions['A'].width = 2.6#设置列宽
+    ws.column_dimensions['A'].width = 4#设置列宽
     for i in range(2,ws.max_column+1):#最大列数目，是整数类型
-        ws.column_dimensions[get_column_letter(i)].width = 3.4
+        ws.column_dimensions[get_column_letter(i)].width = 5
     for i in range(4,ws.max_row+1):#最大列数目，是整数类型
         ws.row_dimensions[i].height = 40
     for row in list(ws.rows)[1:3]:#生成器转list才能迭代，前两行行
@@ -114,7 +115,7 @@ def main():
     ziti = ws['B4:'+get_column_letter(ws.max_column)+str(ws.max_row)]
     for row in list(ziti):#单元格选择区域是tuple，转换成list就能赋值了
         for cell in row:
-            cell.font=Font(size=7)
+            cell.font=Font(size=11)
             cell.alignment = Alignment(wrap_text=True)#设置文本自动换行
     wb.save('汇总.xlsx')#excel写入sheat
 
