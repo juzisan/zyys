@@ -115,11 +115,12 @@ def main():
     #程序开始
     #数据区
     names = os.listdir(os.path.split(os.path.realpath(__file__))[0])
-    shanchu = [i for i in names if i.startswith('试卷分析')]
+    shanchu = [i for i in names if not re.match('(\d\-\d.xlsx)|(.*.py)', i)]#凡不是小分表的xlsx文件，和不是py的文件都删除掉
+
     for i in shanchu:
         os.remove(i)
     names = os.listdir(os.path.split(os.path.realpath(__file__))[0])
-    names = [i for i in names if i.count('xls')]
+    names = [i for i in names if re.match('\d\-\d.xlsx', i)]
     #数据区
     for i in names:
         duo(i)
