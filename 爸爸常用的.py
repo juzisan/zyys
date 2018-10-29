@@ -89,7 +89,9 @@ def duo(xlsx_nam):
             ws.append(row)
     ws.column_dimensions['A'].width = 3#设置列宽
     ws.column_dimensions['B'].width = 9
-    for i in range(3,ws.max_column):#最大列数目，是整数类型
+    for i in range(3,21):#最大列数目，是整数类型
+        ws.column_dimensions[get_column_letter(i)].width = 3
+    for i in range(21,ws.max_column):#最大列数目，是整数类型
         ws.column_dimensions[get_column_letter(i)].width = 5
     ws.column_dimensions[get_column_letter(ws.max_column)].width = 6
     for i in list(ws.rows)[0]:#生成器转list才能迭代，第一行
@@ -115,11 +117,12 @@ def main():
     #程序开始
     #数据区
     names = os.listdir(os.path.split(os.path.realpath(__file__))[0])
-    shanchu = [i for i in names if i.startswith('试卷分析')]
+    shanchu = [i for i in names if not re.match('(\d\-\d.xlsx)|(.*.py)', i)]#凡不是小分表的xlsx文件，和不是py的文件都删除掉
+
     for i in shanchu:
         os.remove(i)
     names = os.listdir(os.path.split(os.path.realpath(__file__))[0])
-    names = [i for i in names if i.count('xls')]
+    names = [i for i in names if re.match('\d\-\d.xlsx', i)]
     #数据区
     for i in names:
         duo(i)
