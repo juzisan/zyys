@@ -6,118 +6,113 @@ Created on Sat Nov  5 10:50:13 2016
 @author: hello
 """
 
-import sys
-import os
-import re
+
 import codecs
-import copy
-import math
-import urllib
-import urllib.request
-import time,datetime
-import operator
-import zipfile
-import shutil
-import glob
-import requests
-import sqlite3
 import pandas as pd
-from multiprocessing import Pool as mpp
-from multiprocessing.dummy import Pool as tpp
-from math import log1p as ln
-from matplotlib import pyplot
-from pandas.tseries.offsets import *
-from bs4 import BeautifulSoup
-from shuju import all_list
-from shuju import url_tou
+from requests_html import HTMLSession
+import random
 from shuju import url_dict
-from shuju import tou
-from shuju import wei
+from shuju import html_tou
+
+url_dl = url_dict['tou'] + url_dict['yy']#登陆链接
+url_lj = url_dict['tou'] + url_dict['dl']#生成？号登陆链接
+url_xy = url_dict['tou'] + url_dict['xy']#学员
+url_ls = url_dict['tou'] + url_dict['ls']#老师
+url_jm = url_dict['tou'] + url_dict['jm']#教秘
+url_zr = url_dict['tou'] + url_dict['zr']#主任
 
 
+def read_to_list(neir=None):
 
-def read_to_list(readonce=None):
-    readonce =re.sub(r'\{\}','0',readonce)#eval函数需要对应的
-    readonce =re.sub(r'null','0',readonce)#eval函数需要对应的null识别成变量
-    findok =re.search(r'(?<=\[).*(?=\])',readonce)#【】需要转义
-    pattern =re.compile(r'{.*?}')
-    listlist=pattern.findall(findok.group())
-    '''aa=[]
-    for i in listlist:
-        print (i)
-        aa.append(eval(i))'''
-    aa= [eval(x) for x in listlist]
-    #aa= sorted(aa, key=lambda k: k['userName'][:1])#不能按照中文名字排序
-    print ([x['userName'] for x in aa])
-    return aa
+    values0 =['90','95','100','105','110','115','120','125','130','135','140','145','150']
+    values = ['red','green','magenta','chocolate','brown','deeppink',r'#000080']
 
-def pr_url(url_str=None):
-    return url_tou + url_str
+
+    kaitou = neir.find("[")
+    jiewei = neir.rfind("]")
+    neir = neir[kaitou:jiewei+1]
+
+    df = pd.read_json(neir)
+
+    df = df[['userName','loginName', 'password', 'departmentName', "subjectName"]]
+
+    df['字体'] = random.sample(values0 * df['userName'].count(), df['userName'].count())
+    df['颜色'] = random.sample(values * df['userName'].count(), df['userName'].count())
+
+    df['link'] = '&rArr;<a href="' + url_lj +df['loginName']+'&password='+df['password']+'" style="font-size:'+df['字体']+'%;color:'+df['颜色']+'">'+df['userName']+'_'+df['subjectName']+'_'+df['departmentName']+'</a>&emsp;'
+
+
+    return df['link'].tolist()
+
 
 
 def main():
+    session = HTMLSession()
 
-    my_headers = {
-        'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.116 Safari/537.36',
-        'Accept' : 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Encoding' : 'gzip',
-        'Accept-Language' : 'zh-CN,zh;q=0.8,en;q=0.6,zh-TW;q=0.4'
-    }
-    sss     = requests.Session()
-    r       = sss.get(pr_url(url_dict['yy']), headers = my_headers)
+    r = session.get(url_dl)#登陆医院
+    print ('login finished')
+#学员
+    r = session.get(url_xy)
 
-
-    r       = sss.post(pr_url(url_dict['xy']), headers = my_headers)
-
-    a_str=r.text
-    xa_str=a_str[a_str.find('var userGridData='):a_str.find('var userGridGridLoadUrl')]
-    list_O = read_to_list(xa_str)
-    #xingming = [x['userName'] for x in aa]
-    xueyuan_list=[['学员', x['userName']+'_'+x['subjectName'], pr_url(url_dict['dl']) +x['loginName']+'&password='+x['password']] for x in list_O]
-    print (len(xueyuan_list))
+    textt = r.html.find('script', containing='var userGridData',first = True ).html
+    #搜索script 内容为var userGridData，返回第一个，再转符串
+    xueyuan_list = read_to_list(textt)
+    print ("学员：", len(xueyuan_list))
 
 
-    r       = sss.post(pr_url(url_dict['ls']), headers = my_headers)
-
-    a_str=r.text
-    xa_str=a_str[a_str.find('var userGridData='):a_str.find('var userGridGridLoadUrl')]
-    list_O = read_to_list(xa_str)
-    #xingming = [x['userName'] for x in aa]
-    daijiao_list=[['老师', x['userName']+'_'+x['departmentName'],  pr_url(url_dict['dl']) +x['loginName']+'&password='+x['password']] for x in list_O]
-    print (len(daijiao_list))
+#老师
+    r = session.get(url_ls)
+    textt = r.html.find('script', containing='var userGridData',first = True ).html
+    daijiao_list = read_to_list(textt)
+    print ("老师：", len(daijiao_list))
 
 
-    r       = sss.post(pr_url(url_dict['jm']), headers = my_headers)
-
-    a_str=r.text
-    xa_str=a_str[a_str.find('var userGridData='):a_str.find('var userGridGridLoadUrl')]
-    list_O = read_to_list(xa_str)
-    #xingming = [x['userName'] for x in aa]
-    jiaomi_list=[['敎秘', x['userName']+'_'+x['departmentName'], pr_url(url_dict['dl']) +x['loginName']+'&password='+x['password']] for x in list_O]
-    print (len(jiaomi_list))
-
-
-    r       = sss.post(pr_url(url_dict['zr']), headers = my_headers)
-
-    a_str=r.text
-    xa_str=a_str[a_str.find('var userGridData='):a_str.find('var userGridGridLoadUrl')]
-    list_O = read_to_list(xa_str)
-    #xingming = [x['userName'] for x in aa]
-    zhuren_list=[['主任',x['userName']+'_'+x['departmentName'], pr_url(url_dict['dl']) +x['loginName']+'&password='+x['password']] for x in list_O]
-    print (len(zhuren_list))
-    all_list.extend(xueyuan_list)
-    all_list.extend(daijiao_list)
-    all_list.extend(jiaomi_list)
-    all_list.extend(zhuren_list)
-    zhongjian = [str(index+1) + ",'"+x[0]+"','" +x[1] +"','" +x[2] +"'" for index,x in enumerate(all_list)]
-    zhongzhi = '),('.join(zhongjian)
+#教秘
+    r = session.get(url_jm)
+    textt = r.html.find('script', containing='var userGridData',first = True ).html
+    jiaomi_list = read_to_list(textt)
+    print ("教秘：", len(jiaomi_list))
 
 
 
-    with codecs.open('zyys.sql','w','utf-8') as f2:
-        f2.write(tou + zhongzhi + wei)
+#主任
+    r = session.get(url_zr)
+    textt = r.html.find('script', containing='var userGridData',first = True ).html
+    zhuren_list = read_to_list(textt)
+    print ("主任：", len(zhuren_list))
 
-    print ('完成')
 
+#合并html
+    html_body = html_tou+r'学员</th><td>'
+    for x in xueyuan_list:
+        html_body+=x
+    html_body+=r'''</td></tr>
+	<tr style="border:2px  dashed;"><th>带教</th><td>'''
+    for x in daijiao_list:
+        html_body+=x
+    html_body+=r'''</td></tr>
+	<tr style="border:2px  dashed;"><th>教秘</th><td>'''
+    for x in jiaomi_list:
+        html_body+=x
+    html_body+=r'''</td></tr>
+	<tr style="border:2px  dashed;"><th>主任</th><td>'''
+    for x in zhuren_list:
+        html_body+=x
+    html_body+='''</td></tr>
+	</table></h5>
+<pre>
+
+</pre>
+	</div>
+</body>
+</html>
+'''
+
+
+
+
+    with codecs.open('zyys.html','w','utf-8') as f2:
+        f2.write(html_body)
+    print ('OK')
 
 main()
