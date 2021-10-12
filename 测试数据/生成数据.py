@@ -36,8 +36,8 @@ def main():
     aa = np.random.normal(loc=1.9, scale=1.2, size=10)*1.9
     print (aa)
 
-    #df2_size = 1000#千
-    df2_size = 1000000#百万
+    df2_size = 1000#千
+    #df2_size = 1000000#百万
     df2 = pd.DataFrame(np.arange(df2_size))
     df2['真假0'] = np.random.choice([True,False], size=df2_size, replace=True, p=[0.2,0.8])
     df2['真假1'] = np.random.choice([True,False], size=df2_size, replace=True, p=[0.1,0.9])
