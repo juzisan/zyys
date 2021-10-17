@@ -20,6 +20,7 @@ def itv2time(iItv):
 
 
 def main():
+    print (''.join([['we','ereew','xccd'],['wqq','zzzx']]))
 
     values0 =[90,95,100,105,110,115,120,125,130,135,140,145,150]
     values = ['red','green','magenta','chocolate','brown','deeppink',r'#000080']
@@ -35,9 +36,9 @@ def main():
 
     aa = np.random.normal(loc=1.9, scale=1.2, size=10)*1.9
     print (aa)
-
+    df2_size = 10#千
     #df2_size = 1000#千
-    df2_size = 1000000#百万
+    #df2_size = 1000000#百万
     df2 = pd.DataFrame(np.arange(df2_size))
     df2['真假0'] = np.random.choice([True,False], size=df2_size, replace=True, p=[0.2,0.8])
     df2['真假1'] = np.random.choice([True,False], size=df2_size, replace=True, p=[0.1,0.9])
