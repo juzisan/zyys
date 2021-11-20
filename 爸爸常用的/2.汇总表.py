@@ -89,40 +89,35 @@ def main():
     ws.page_margins.bottom = 0.2
     ws.page_margins.header = 0
     ws.page_margins.footer = 0#设置页边距
-    ws.print_title_cols = 'A:A'
+    ws.print_title_cols = 'A:B'
     ws.delete_rows(3)
 
     for row in ws.rows:
         for cell in row:
             cell.border =thin_border#设置边框
 
-    ws.insert_rows(1)#插入标题行
-    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=20)#合并标题行
-    p_title = '数学' + p_title#'七年_________考试教学质量分析统计表（数学）'改成前面的了
-    ws['A1'] = p_title
-    ws['A1'].alignment = Alignment(horizontal='center')#设置标题居中
-    ws['A1'].font = Font(size=20)#设置字号大小
-    ws['A3'] = '班级'
+    ws.insert_rows(0)#插入标题行
+    ws.insert_rows(0)#插入标题行
 
     ws.column_dimensions['A'].width = 4#设置列宽
     for i in range(2,ws.max_column+1):#最大列数目，是整数类型
         ws.column_dimensions[get_column_letter(i)].width = 5
     for i in range(4,ws.max_row+1):#最大列数目，是整数类型
         ws.row_dimensions[i].height = 40
-    for row in list(ws.rows)[1:3]:#生成器转list才能迭代，前两行行
+    for row in list(ws.rows)[2:3]:#生成器转list才能迭代，前两行行
         for cell in row:
             cell.alignment = Alignment(wrap_text=True)#设置文本自动换行
 
-    lie_diyi = ws['A3:A'+str(ws.max_row)]
+    lie_diyi = ws['A2:A'+str(ws.max_row)]
     for row in list(lie_diyi):#单元格选择区域是tuple，转换成list就能赋值了
         for cell in row:
             cell.alignment = Alignment(wrap_text=True)
 
     for i in range(2,ws.max_column,2):#不能在插入第一行之前，否则保存的合并单元格有没有了，所以总是布局所有单元格的数据，然后再排版
         end_i = i +1
-        ws.merge_cells(start_row=2, start_column=i, end_row=2, end_column=end_i)
+        ws.merge_cells(start_row=3, start_column=i, end_row=3, end_column=end_i)
 
-    for row in list(ws.rows)[1:]:
+    for row in list(ws.rows)[3:]:
         for cell in row:
             cell.border =thin_border#设置边框
 
@@ -131,6 +126,20 @@ def main():
         for cell in row:
             cell.font=Font(size=11)
             cell.alignment = Alignment(wrap_text=True)#设置文本自动换行
+
+
+    #ws.insert_rows(0)#插入标题行
+
+    ws['A4'] = '班级'
+    #ws.unmerge_cells('B1:C1')
+    #ws.unmerge_cells('D1:E1')
+    #ws.merge_cells('B2:G12')#合并标题行
+    p_title = '数学' + p_title#'七年_________考试教学质量分析统计表（数学）'改成前面的了
+    ws['M2'] = p_title
+    ws['M2'].alignment = Alignment(horizontal='center')#设置标题居中
+    ws['M2'].font = Font(size=20)#设置字号大小
+
+
     wb.save('汇总.xlsx')#excel写入sheat
 
     os.remove('汇总表表.xlsx')
