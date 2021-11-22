@@ -89,29 +89,22 @@ def main():
     ws.page_margins.bottom = 0.2
     ws.page_margins.header = 0
     ws.page_margins.footer = 0#设置页边距
-    ws.print_title_cols = 'A:B'
+    ws.print_title_cols = 'A:A'
     ws.delete_rows(3)
 
     for row in ws.rows:
         for cell in row:
             cell.border =thin_border#设置边框
+    ws.insert_rows(0)#插入标题行
+    ws.insert_rows(0)#插入标题行
 
-    ws.insert_rows(0)#插入标题行
-    ws.insert_rows(0)#插入标题行
 
     ws.column_dimensions['A'].width = 4#设置列宽
     for i in range(2,ws.max_column+1):#最大列数目，是整数类型
         ws.column_dimensions[get_column_letter(i)].width = 5
-    for i in range(4,ws.max_row+1):#最大列数目，是整数类型
-        ws.row_dimensions[i].height = 40
-    for row in list(ws.rows)[2:3]:#生成器转list才能迭代，前两行行
-        for cell in row:
-            cell.alignment = Alignment(wrap_text=True)#设置文本自动换行
+    for i in range(3,ws.max_row+1):#最大行数目，是整数类型
+        ws.row_dimensions[i].height = 43
 
-    lie_diyi = ws['A2:A'+str(ws.max_row)]
-    for row in list(lie_diyi):#单元格选择区域是tuple，转换成list就能赋值了
-        for cell in row:
-            cell.alignment = Alignment(wrap_text=True)
 
     for i in range(2,ws.max_column,2):#不能在插入第一行之前，否则保存的合并单元格有没有了，所以总是布局所有单元格的数据，然后再排版
         end_i = i +1
@@ -121,7 +114,7 @@ def main():
         for cell in row:
             cell.border =thin_border#设置边框
 
-    ziti = ws['B4:'+get_column_letter(ws.max_column)+str(ws.max_row)]
+    ziti = ws['A3:'+get_column_letter(ws.max_column)+str(ws.max_row)]
     for row in list(ziti):#单元格选择区域是tuple，转换成list就能赋值了
         for cell in row:
             cell.font=Font(size=11)
