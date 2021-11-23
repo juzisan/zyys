@@ -15,6 +15,8 @@ from openpyxl import load_workbook
 #from openpyxl.compat import range
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Border, Side, Font, Alignment
+from openpyxl import Workbook
+from openpyxl.utils.dataframe import dataframe_to_rows
 
 
 
@@ -24,10 +26,7 @@ def duo(xlsx_nam):
     biao = biao_or[-2:].copy()
     lie_neirong = xlsx_nam.replace('试卷分析','')
     lie_neirong = re.search(r'((高湾|新抚)\d{1,2}班)', xlsx_nam).group(1)
-    print (biao)
     biao['班级'] = lie_neirong
-    print (biao)
-
     print ('duo done {}'.format(xlsx_nam))
     return biao
 
@@ -68,15 +67,13 @@ def main():
         biaotou3.append((i,'平均扣分'))
 
     data_hebing = data_hebing[biaotou3]
-    indexnow = data_hebing.index.tolist()
-    indexnow = [str(i)+'班' for i in indexnow]
+
     data_hebing.index.map(lambda x: str(x) + '班')
-    print (indexnow)
+    print (data_hebing.index)
 
-    data_hebing.to_excel('汇总表表.xlsx')
 
-    wb = load_workbook('汇总表表.xlsx')
-    ws  = wb.active
+    wb = Workbook()#创建workbook实例
+    ws = wb.active
     thin_border = Border(left=Side(style='thin'),
                          right=Side(style='thin'),
                          top=Side(style='thin'),
@@ -90,14 +87,16 @@ def main():
     ws.page_margins.header = 0
     ws.page_margins.footer = 0#设置页边距
     ws.print_title_cols = 'A:A'
-    ws.delete_rows(3)
+
 
     for row in ws.rows:
         for cell in row:
             cell.border =thin_border#设置边框
     ws.insert_rows(0)#插入标题行
-    ws.insert_rows(0)#插入标题行
 
+
+    for r in dataframe_to_rows(data_hebing, index=True, header=True):
+        ws.append(r)
 
     ws.column_dimensions['A'].width = 4#设置列宽
     for i in range(2,ws.max_column+1):#最大列数目，是整数类型
@@ -106,36 +105,33 @@ def main():
         ws.row_dimensions[i].height = 43
 
 
-    for i in range(2,ws.max_column,2):#不能在插入第一行之前，否则保存的合并单元格有没有了，所以总是布局所有单元格的数据，然后再排版
+    for i in range(2,ws.max_column,2):#合并表头
         end_i = i +1
-        ws.merge_cells(start_row=3, start_column=i, end_row=3, end_column=end_i)
+        ws.merge_cells(start_row=2, start_column=i, end_row=2, end_column=end_i)
 
-    for row in list(ws.rows)[3:]:
+    for row in list(ws.rows)[1:]:
         for cell in row:
             cell.border =thin_border#设置边框
 
-    ziti = ws['A3:'+get_column_letter(ws.max_column)+str(ws.max_row)]
+    ziti = ws['A2:'+get_column_letter(ws.max_column)+str(ws.max_row)]
     for row in list(ziti):#单元格选择区域是tuple，转换成list就能赋值了
         for cell in row:
             cell.font=Font(size=11)
             cell.alignment = Alignment(wrap_text=True)#设置文本自动换行
 
 
-    #ws.insert_rows(0)#插入标题行
-
-    ws['A4'] = '班级'
-    #ws.unmerge_cells('B1:C1')
-    #ws.unmerge_cells('D1:E1')
-    #ws.merge_cells('B2:G12')#合并标题行
+    ws['A3'] = ws['A4'].value#单元格值需要value
+    ws.delete_rows(4)#删行
+    ws.merge_cells('D1:U1')
     p_title = '数学' + p_title#'七年_________考试教学质量分析统计表（数学）'改成前面的了
-    ws['M2'] = p_title
-    ws['M2'].alignment = Alignment(horizontal='center')#设置标题居中
-    ws['M2'].font = Font(size=20)#设置字号大小
+    ws['D1'] = p_title
+    ws['D1'].alignment = Alignment(horizontal='center')#设置标题居中
+    ws['D1'].font = Font(size=20)#设置字号大小
 
 
     wb.save('汇总.xlsx')#excel写入sheat
 
-    os.remove('汇总表表.xlsx')
+    #os.remove('汇总表表.xlsx')
 
 
 
