@@ -105,3 +105,4 @@ venv.bak/
 *.csv
 shuju.py
 *.html
+.idel
