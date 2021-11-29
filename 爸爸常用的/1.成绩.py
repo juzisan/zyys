@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Oct 19 19:52:49 2019
+"""Created on Sat Oct 19 19:52:49 2019.
 
 @author: Mrlily
 """
@@ -17,25 +15,20 @@ import time
 
 
 def timer(func):
-    """"计时器
-
-    """
+    """计时器."""
     def warpper():
-        """"计时器内部
-
-        """
+        """计时器内部."""
         print('\033[1;32;40mstart\033[0m')
         time1 = time.time()
         func()
         seconds = time.time() - time1
         m, s = divmod(seconds, 60)
         print("\033[1;32;40mthe run time is %02d:%.6f\033[0m" % (m, s))
-
     return warpper
 
 
 def duo(xlsx_nam, data_xlsx):
-    """重复部分"""
+    """重复部分."""
     xlsx_nam = xlsx_nam + '班'
     # 文件名
 
@@ -87,10 +80,7 @@ def duo(xlsx_nam, data_xlsx):
 
 
 def chuli(xlsx_nam_chuli):
-    # 共有
-    global biao_or
-    global zong_renshu
-
+    """共有."""
     biao_or = pd.read_excel(xlsx_nam_chuli, skiprows=1, dtype={
                             '班级': 'str', })  # 读excel'总分':'int'
     biao_or = biao_or.sort_values(by=['总分'], ascending=False)
@@ -153,7 +143,8 @@ def chuli(xlsx_nam_chuli):
         biaotou.remove('班级')
         value = value[biaotou]
         value.index = range(1, len(value) + 1)
-        mean_mean = value.mean().tolist()  # pandas的mean出错太多了
+        mean_mean = list(value.mean(numeric_only=True))  # pandas的mean出错太多了
+
         mean_mean.insert(0, '平均扣分')
         # mean_mean.insert(1,'班级')
         # print(dict(zip(biaotou, mean_mean)))
@@ -190,7 +181,7 @@ lieming_dict = {'客 | 一.1': '一.1', '客 | 一.2': '一.2', '客 | 一.3': '
 
 @timer
 def main():
-    """程序开始"""
+    """程序开始."""
     names = os.listdir(os.path.split(os.path.realpath(__file__))[0])
     names = [i for i in names if re.match('小分表.*.xlsx', i)]
 

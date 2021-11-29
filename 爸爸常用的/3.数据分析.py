@@ -1,30 +1,19 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Oct 19 19:52:49 2019
+"""Created on Sat Oct 19 19:52:49 2019.
 
 @author: Mrlily
 """
 
-
 import os
-import re
 import pandas as pd
-import numpy as np
-from openpyxl import Workbook
-from openpyxl.utils import get_column_letter
-from openpyxl.utils.dataframe import dataframe_to_rows
-from openpyxl.styles import Alignment, Border, Side, Font
+import re
 import time
 
 
 def timer(func):
-    """"计时器
+    """计时器."""
 
-    """
     def warpper():
-        """"计时器内部
-
-        """
+        """计时器内部."""
         print('\033[1;32;40mstart\033[0m')
         time1 = time.time()
         func()
@@ -46,14 +35,14 @@ lieming_dict = {'客 | 一.1': '一.1', '客 | 一.2': '一.2', '客 | 一.3': '
 
 
 def chuli(xlsx_nam_chuli):
-    # 共有
+    """共有."""
     global biao_or
     global zong_renshu
 
     biao_or = pd.read_excel(xlsx_nam_chuli, skiprows=1, dtype={
-                            '班级': 'str', })  # 读excel'总分':'int'
+        '班级': 'str', })  # 读excel'总分':'int'
     biao_or = biao_or.sort_values(by=['总分'], ascending=False)
-    biao_or.index = range(1, len(biao_or)+1)  # 重建索引
+    biao_or.index = range(1, len(biao_or) + 1)  # 重建索引
     bb = biao_or.tail(1).applymap(lambda x: int(
         re.search(r'得分/共(\d+)分', x).group(1)), na_action='ignore')
 
@@ -62,7 +51,7 @@ def chuli(xlsx_nam_chuli):
     biao_or = pd.concat([biao_or, bb], ignore_index=True)
     biao_or.rename(columns=lieming_dict, inplace=True)
     biaotou = list(biao_or.columns.values)  # pandas列名转list,先转成的迭代器
-# 共有
+    # 共有
 
     print(type(biaotou))
     dati_list = []
@@ -93,14 +82,14 @@ def chuli(xlsx_nam_chuli):
 
     biao_or.drop(biao_or.tail(1).index, inplace=True)
 
-# 在循环用exec引用
+    # 在循环用exec引用
 
     zong_renshu = biao_or['总分'].count()  # 总人数，全局变量
     jige_renshu = biao_or[biao_or["总分"] > 59.6].count()["总分"]  # 及格人数
     youxiu_renshu = biao_or[biao_or["总分"] > 84.6].count()["总分"]  # 优秀人数
     guocha_renshu = biao_or[biao_or["总分"] < 39.7].count()["总分"]  # 过差人数
 
-# 在循环用exec引用
+    # 在循环用exec引用
 
     zongti_pd = pd.DataFrame(index=["all"])
 
@@ -115,7 +104,7 @@ def chuli(xlsx_nam_chuli):
                    }
 
     for x in zongti_dict:
-        exec("zongti_pd['"+x+"'] = "+zongti_dict[x])
+        exec("zongti_pd['" + x + "'] = " + zongti_dict[x])
 
     del jige_renshu, youxiu_renshu, guocha_renshu  # 为了不显示错误
 
@@ -131,18 +120,19 @@ def chuli(xlsx_nam_chuli):
 
 
 def zutifenxi(nei):
+    """逐题分析."""
     global zuiti_pd
     yilie, manfen_zhi = nei
 
     zuiti_pd = pd.DataFrame(index=[yilie])
     yilie = biao_or[yilie]
 
-# 在循环用exec引用
+    # 在循环用exec引用
     manfen_renshu = yilie[yilie == manfen_zhi].count()
-    jige_renshu_zutifenxi = yilie[yilie > manfen_zhi*0.6].count()
+    jige_renshu_zutifenxi = yilie[yilie > manfen_zhi * 0.6].count()
     lingfen_renshu_zutifenxi = yilie[yilie == 0].count()
 
-# 在循环用exec引用
+    # 在循环用exec引用
 
     zixing_dict = {'本题满分': 'manfen_zhi',
                    '满分人数': 'manfen_renshu',
@@ -158,7 +148,7 @@ def zutifenxi(nei):
                    }
 
     for x in zixing_dict:
-        exec("zuiti_pd['"+x+"'] = "+zixing_dict[x])
+        exec("zuiti_pd['" + x + "'] = " + zixing_dict[x])
 
     del manfen_renshu, jige_renshu_zutifenxi, lingfen_renshu_zutifenxi  # 为了不显示错误
 
@@ -167,7 +157,7 @@ def zutifenxi(nei):
 
 @timer
 def main():
-    # 程序开始
+    """程序开始."""
     names = os.listdir(os.path.split(os.path.realpath(__file__))[0])
     # [i for i in names if re.match('小分表.*.xlsx', i)]
     names = list(filter(lambda x: re.match('小分表.*.xlsx', x), names))

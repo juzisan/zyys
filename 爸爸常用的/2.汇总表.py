@@ -1,46 +1,37 @@
-# -*- coding: utf-8 -*-
-# !/usr/bin/env python
-"""
-Created on Sat Nov  5 10:50:13 2016
+"""Created on Sat Nov  5 10:50:13 2016.
 
 @author: hello
 """
 
 
-import os
-import re
-import pandas as pd
 import numpy as np
-from openpyxl import load_workbook
-#  from openpyxl.compat import range
-from openpyxl.utils import get_column_letter
-from openpyxl.styles import Border, Side, Font, Alignment
-from openpyxl import Workbook
-from openpyxl.utils.dataframe import dataframe_to_rows
+import os
+import pandas as pd
+import re
 import time
+from openpyxl import Workbook
+from openpyxl.styles import Border, Side, Font, Alignment
+from openpyxl.utils import get_column_letter
+from openpyxl.utils.dataframe import dataframe_to_rows
 
 
 def timer(func):
-    """"计时器
-
-    """
+    """计时器."""
     def warpper():
-        """"计时器内部
-
-        """
+        """计时器内部."""
         print('\033[1;32;40mstart\033[0m')
         time1 = time.time()
         func()
         seconds = time.time() - time1
         m, s = divmod(seconds, 60)
         print("\033[1;32;40mthe run time is %02d:%.6f\033[0m" % (m, s))
-
     return warpper
 
 
 def duo(xlsx_nam):
-    #  文件名
-    biao_or = pd.read_excel("试卷分析" + xlsx_nam + ".xlsx", index_col=0, skiprows=1)  # 读excel
+    """重复."""
+    biao_or = pd.read_excel("试卷分析" + xlsx_nam + ".xlsx",
+                            index_col=0, skiprows=1)  # 读excel
     biao = biao_or[-2:].copy()
     biao['班级'] = xlsx_nam
     print('duo done {}'.format(xlsx_nam))
@@ -49,8 +40,7 @@ def duo(xlsx_nam):
 
 @timer
 def main():
-    #  程序开始
-    #  数据区
+    """程序开始."""
     names = os.listdir(os.path.split(os.path.realpath(__file__))[0])
     shanchu = [i for i in names if i.startswith('汇总表')]
     for i in shanchu:
