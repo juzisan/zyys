@@ -52,8 +52,9 @@ def main():
     print(p_title)
     names = [i for i in names if i.count('试卷分析')]
 
-    names1 = [i for i in names if re.match('^试卷分析(高湾|新抚)\\d班.xlsx$', i)]
-    names2 = [i for i in names if re.match('^试卷分析(高湾|新抚)\\d{2}班.xlsx$', i)]
+    names1 = [i for i in names if re.match('^试卷分析\\d班.xlsx$', i)]
+    names2 = [i for i in names if re.match('^试卷分析\\d{2}班.xlsx$', i)]
+    # (高湾|新抚)
     names = names1 + names2
     names = [i.lstrip("试卷分析") for i in names]
     names = [i.rstrip(".xlsx") for i in names]

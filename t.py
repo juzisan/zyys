@@ -11,7 +11,7 @@ import datetime
 start_time = time.time()
 
 
-def timer(func):  #计时器
+def timer(func):  # 计时器
     def warpper():
         print('\033[1;32;40mstart\033[0m')
         time1 = time.time()
