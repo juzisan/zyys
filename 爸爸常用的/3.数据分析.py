@@ -74,11 +74,13 @@ def chuli(xlsx_nam_chuli):
 
     tizhi = zutifenxi_fenzhi[dati_list].T.to_dict(orient='dict')
     print(tizhi)
+    zong_fenshu = sum(list(tizhi.values())[0].values()) # 总分数
 
     tizhi = tizhi.popitem()[1]
     tizhi = tizhi.items()  # 把dict转成list
 
-    print(tizhi)
+
+
     # tizhi = tizhi[:2]
 
     biao_or.drop(biao_or.tail(1).index, inplace=True)
@@ -95,6 +97,7 @@ def chuli(xlsx_nam_chuli):
     zongti_pd = pd.DataFrame(index=["all"])
 
     zongti_dict = {'总人数': 'zong_renshu',
+                   '总分': 'zong_fenshu',
                    '平均分': "round(biao_or['总分'].mean(),1)",
                    '及格人数': 'jige_renshu',
                    '及格率': 'round(jige_renshu/zong_renshu*100,1)',
@@ -107,16 +110,18 @@ def chuli(xlsx_nam_chuli):
     for x in zongti_dict:
         exec("zongti_pd['" + x + "'] = " + zongti_dict[x])
 
-    del jige_renshu, youxiu_renshu, guocha_renshu  # 为了不显示错误
+    del jige_renshu, youxiu_renshu, guocha_renshu, zong_fenshu  # 为了不显示错误
 
-    print(biao_or)
+    # print(biao_or)
 
     hebin_df = map(zutifenxi, tizhi)  # 函数用一个变量更容易解决解包的问题
     hebin_df = pd.concat(hebin_df, ignore_index=False)
 
     print(zongti_pd)
     print(hebin_df)
-    print('卷面满分：', hebin_df['本题满分'].sum())
+    hebin_df = pd.concat([zongti_pd,hebin_df],axis=1)
+    hebin_df.to_excel ('aa.xlsx')
+    os.startfile('aa.xlsx')
     print('OK')
 
 
