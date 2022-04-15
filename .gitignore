@@ -106,3 +106,4 @@ venv.bak/
 shuju.py
 *.html
 .idea
+*.xls
