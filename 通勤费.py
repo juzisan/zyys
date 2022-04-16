@@ -3,6 +3,11 @@
 Spyder Editor
 
 This is a temporary script file.
+
+需要
+1. 数据.xls
+2. add.png
+3. 安装  pip install opencv-contrib-python
 """
 import time
 import pyautogui
@@ -17,7 +22,8 @@ pd_tqf = pd.read_excel('数据.xls', index_col=0, sheet_name='通勤费', dtype=
 pd_tqf = pd_tqf[:4]
 
 gao_xz = 0  # edge修正为0，chrome修正为45
-po_jh = (1820, 550 + gao_xz)  # 加号1500,515 + gao_xz
+po_jh = pyautogui.locateCenterOnScreen('add.png', confidence=0.5)  # 加号的位置
+print(po_jh)
 pyautogui.click(po_jh)
 time.sleep(2)
 
