@@ -28,7 +28,8 @@ pyautogui.click(po_jh)
 time.sleep(2)
 
 for row in pd_tqf.itertuples():
-    print(getattr(row, '人员编码'))
+    
+    print(getattr(row, '姓名'))
 
     po_rybm = (1100, 600 + gao_xz)  # 人员编码775,570 + gao_xz
     pyautogui.click(po_rybm)
