@@ -49,9 +49,10 @@ def main():
         read_txt = f2.readlines()
         write_txt = []
         for i in read_txt:
-            if i.find('\r\n') > 1:
-                neirong_str = i.lstrip()
-                write_txt.append(neirong_str)
+            neirong_str = i.strip()
+            neirong_str = neirong_str.strip("=")
+            if neirong_str:
+                write_txt.append(neirong_str + "\r\n")
 
         # f2.write(ww)
 
