@@ -15,7 +15,8 @@ import time
 
 
 def timer(func):
-    """计时器."""
+    """ 计时器. """
+
     def warpper():
         """计时器内部."""
         print('\033[1;32;40mstart\033[0m')
@@ -24,6 +25,7 @@ def timer(func):
         seconds = time.time() - time1
         m, s = divmod(seconds, 60)
         print("\033[1;32;40mthe run time is %02d:%.6f\033[0m" % (m, s))
+
     return warpper
 
 
@@ -48,9 +50,7 @@ def duo(xlsx_nam, data_xlsx):
     ws.page_margins.header = 0
     ws.page_margins.footer = 0  # 设置页边距
     ws.print_title_rows = '1:2'  # 设置打印标题为2行
-
-    # print (dffff.tail())
-    rows = dataframe_to_rows(data_xlsx)  # pandas的dataframe转openpyxl的格式
+    rows = dataframe_to_rows(data_xlsx)  # pandas 的dataframe 转openpyxl 的格式
     for row in rows:  # 不知道为啥有空行。openpyxl的序号从1开始。delete_rows()
         if len(row) > 2:
             ws.append(row)
@@ -76,105 +76,112 @@ def duo(xlsx_nam, data_xlsx):
     ws['A1'].font = Font(size=20)  # 设置字号大小
 
     del wb['Sheet']  # 删除默认sheet，保存文件
-    wb.save('试卷分析' + xlsx_nam + '.xlsx')  # excel写入sheat
+    wb.save('试卷分析' + xlsx_nam + '.xlsx')  # excel写入sheet
 
 
 def chuli(xlsx_nam_chuli):
     """共有."""
-    biao_or = pd.read_excel(xlsx_nam_chuli, skiprows=1, dtype={
-                            '班级': 'str', })  # 读excel'总分':'int'
-    biao_or = biao_or.sort_values(by=['总分'], ascending=False)
-    biao_or.index = range(1, len(biao_or) + 1)  # 重建索引
-    bb = biao_or.tail(1).applymap(lambda x: int(
+    table_head_values = pd.read_excel(xlsx_nam_chuli, skiprows=1, dtype={
+        '班级': 'str', })  # 读 excel '总分':'int'
+    table_head_values = table_head_values.sort_values(by=['总分'], ascending=False)
+    table_head_values.index = range(1, len(table_head_values) + 1)  # 重建索引
+    bb = table_head_values.tail(1).applymap(lambda x: int(
         re.search(r'得分/共(\d+)分', x).group(1)), na_action='ignore')
 
-    # biao_or.loc[biao_or.index[-1]].apply(lambda x : 6 if x.empty  else x )
-    biao_or.drop(biao_or.tail(1).index, inplace=True)
-    biao_or = pd.concat([biao_or, bb], ignore_index=True)
-    biao_or.rename(columns=lieming_dict, inplace=True)
-    biaotou = biao_or.columns.values.tolist()  # pandas列名转list
+    # table_head_values.loc[table_head_values.index[-1]].apply(lambda x : 6 if x.empty  else x )
+    table_head_values.drop(table_head_values.tail(1).index, inplace=True)
+    table_head_values = pd.concat([table_head_values, bb], ignore_index=True)
+    table_head_values.rename(columns=column_dict, inplace=True)
+    table_head_values_lst = table_head_values.columns.values.tolist()  # pandas列名转list
     # 共有
 
     ti_list = []
-    # print (biaotou)
-    dati = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', ]
-    for k in dati:
-        for j in biaotou:
+    # print (table_head_values_lst)
+    big_problem = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', ]
+    for k in big_problem:
+        for j in table_head_values_lst:
             if j.find(k) > -1:
                 ti_list.append(j)
 
     # print (ti_list)
 
-    zutifenxi_fenzhi = biao_or.tail(1)
+    each_problem_value = table_head_values.tail(1)
 
-    tizhi = zutifenxi_fenzhi[ti_list].T.to_dict(orient='dict')
-    tizhi = tizhi.popitem()[1]
+    problem_value = each_problem_value[ti_list].T.to_dict(orient='dict')
+    problem_value = problem_value.popitem()[1]
+    sum_values = sum(problem_value.values())
 
-    print('题值', tizhi)
-    # tizhi = tizhi[:1]
+    print('题值：', problem_value, "\n总分：", sum_values)
+    # problem_value = problem_value[:1]
 
-    biao_or.drop(biao_or.tail(1).index, inplace=True)
+    table_head_values.drop(table_head_values.tail(1).index, inplace=True)
 
-    shuchu = []
-    for i in biaotou:
+    del_column = []
+    for i in table_head_values_lst:
         # 目的是删除多余的列。生成每题分值dict
         if i.find('.') > 0:
             pass
         elif i not in ['姓名', '班级', '总分']:
-            shuchu.append(i)
-    for i in shuchu:
-        biaotou.remove(i)
-    biao_or = biao_or[biaotou]  # 去掉无用列
-    biao_or.drop(biao_or.tail(1).index, inplace=True)
-    biao_or["合计"] = biao_or["总分"].astype('float') - 100  # 处理扣总分
-    del biao_or['总分']  # 删除总分列
-    #  biaotou = biao_or.columns.values.tolist()
+            del_column.append(i)
+    for i in del_column:
+        table_head_values_lst.remove(i)
+    table_head_values = table_head_values[table_head_values_lst]  # 去掉无用列
+    table_head_values.drop(table_head_values.tail(1).index, inplace=True)
+    table_head_values["合计"] = table_head_values["总分"].astype('float') - sum_values  # 处理扣总分
+    del table_head_values['总分']  # 删除总分列
+    #  table_head_values_lst = table_head_values.columns.values.tolist()
 
-    for j in tizhi:  # 变成负分.astype('float')
-        biao_or[j] = biao_or[j].astype('float') - tizhi[j]
-        biao_or[j] = biao_or[j].replace(0, np.nan)
+    for j in problem_value:  # 变成负分.astype('float')
+        table_head_values[j] = table_head_values[j].astype('float') - problem_value[j]
+        table_head_values[j] = table_head_values[j].replace(0, np.nan)
 
-    # print(biao_or.dtypes)
-    biao_or = biao_or.groupby(['班级'])  # 按照班级分类
-    # print (biao_or)
-    huizongbiao = []
-    for key, value in biao_or:
-        biaotou = value.columns.values.tolist()
-        biaotou.remove('班级')
-        value = value[biaotou]
+    # print(table_head_values.dtypes)
+    table_head_values = table_head_values.groupby(['班级'])  # 按照班级分类
+    # print (table_head_values)
+    combined_table = []
+    for key, value in table_head_values:
+        table_head_values_lst = value.columns.values.tolist()
+        table_head_values_lst.remove('班级')
+        value = value[table_head_values_lst]
         value.index = range(1, len(value) + 1)
         mean_mean = list(value.mean(numeric_only=True))  # pandas的mean出错太多了
 
         mean_mean.insert(0, '平均扣分')
         # mean_mean.insert(1,'班级')
-        # print(dict(zip(biaotou, mean_mean)))
+        # print(dict(zip(table_head_values_lst, mean_mean)))
 
-        mean_mean = pd.DataFrame(dict(zip(biaotou, mean_mean)), index=[0])
+        mean_mean = pd.DataFrame(dict(zip(table_head_values_lst, mean_mean)), index=[0])
         # print(mean_mean)
         tj = pd.DataFrame([value.count()])
 
         tj['姓名'] = ['扣分人数']  # 添加姓名列，内容是后面的两项，姓名列改内容
-        tj = tj[biaotou]  # 按照biao_or.columns的顺序排列tj表，不排序就出错了，最后两行统计扣分人数和平均扣分
+        tj = tj[table_head_values_lst]  # 按照table_head_values.columns的顺序排列tj表，不排序就出错了，最后两行统计扣分人数和平均扣分
 
         # 把统计加入写入表
 
         value = value.append(mean_mean)
-        value = value.append(tj)  # dataframeappend用加法
+        value = value.append(tj)  # dataframe的append用加法
 
-        huizongbiao.append([key, value])  # 列表append不用加法
+        combined_table.append([key, value])  # 列表append不用加法
 
-    for banji, banji_data in huizongbiao:
-        print(banji)
-        duo(banji, banji_data)
+    for e_class, e_class_data in combined_table:
+        print(e_class)
+        duo(e_class, e_class_data)
     print('OK')
 
 
 # 数据区
-lieming_dict = {'客 | 一.1': '一.1', '客 | 一.2': '一.2', '客 | 一.3': '一.3', '客 | 一.4': '一.4', '客 | 一.5': '一.5',
-                '客 | 一.6': '一.6', '客 | 一.7': '一.7', '客 | 一.8': '一.8', '客 | 一.9': '一.9', '客 | 一.10': '一.10',
-                '主 | 11-18': '二.11-18', '主 | 三.19': '三.19', '主 | 三.20': '三.20', '主 | 四.21': '四.21',
-                '主 | 四.22': '四.22', '主 | 五.23': '五.23', '主 | 六.24': '六.24', '主 | 七.25': '七.25',
-                '主 | 八.26': '八.26', '主 | www.26': '八.26', '主 | 19':'三.19', '主 | 20':'三.20'}
+column_dict = {'客 | 一.1': '一.1', '客 | 一.2': '一.2', '客 | 一.3': '一.3', '客 | 一.4': '一.4', '客 | 一.5': '一.5',
+               '客 | 一.6': '一.6', '客 | 一.7': '一.7', '客 | 一.8': '一.8', '客 | 一.9': '一.9', '客 | 一.10': '一.10',
+               '主 | 11-18': '二.11-18', '主 | 11-16': '二.11-16',
+               '主 | 三.19': '三.19', '主 | 三.20': '三.20', '主 | 19': '三.19', '主 | 20': '三.20',
+               '主 | 三.17': '三.17', '主 | 三.18': '三.18',
+               '主 | 三.21': '三.21', '主 | 三.22': '三.22', '主 | 三.23': '三.23', '主 | 三.24': '三.24',
+               '主 | 四.21': '四.21', '主 | 四.22': '四.22',
+               '主 | 六.24': '六.24',
+               '主 | 五.23': '五.23',
+               '主 | 七.25': '七.25',
+               '主 | 八.26': '八.26'}  # '':'',
 
 
 # 数据区
