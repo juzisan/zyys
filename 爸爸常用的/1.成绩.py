@@ -12,6 +12,7 @@ from openpyxl.utils import get_column_letter
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.styles import Alignment, Border, Side, Font
 import time
+# from dataclasses import dataclass
 
 
 def timer(func):
@@ -81,107 +82,69 @@ def duo(xlsx_nam, data_xlsx):
 
 def chuli(xlsx_nam_chuli):
     """共有."""
-    table_head_values = pd.read_excel(xlsx_nam_chuli, skiprows=1, dtype={
+    original_dataframe = pd.read_excel(xlsx_nam_chuli, skiprows=1, dtype={
         '班级': 'str', })  # 读 excel '总分':'int'
-    table_head_values = table_head_values.sort_values(by=['总分'], ascending=False)
-    table_head_values.index = range(1, len(table_head_values) + 1)  # 重建索引
-    bb = table_head_values.tail(1).applymap(lambda x: int(
-        re.search(r'得分/共(\d+)分', x).group(1)), na_action='ignore')
+    original_dataframe = original_dataframe.sort_values(by=['总分'], ascending=False)
+    original_dataframe.index = range(1, len(original_dataframe) + 1)  # 重建索引 从1开始
+    score_dataframe = original_dataframe.tail(1).applymap(lambda x: int(
+        re.search(r'得分/共(\d+)分', x).group(1)), na_action='ignore')  # 后面还得用它合并
 
-    # table_head_values.loc[table_head_values.index[-1]].apply(lambda x : 6 if x.empty  else x )
-    table_head_values.drop(table_head_values.tail(1).index, inplace=True)
-    table_head_values = pd.concat([table_head_values, bb], ignore_index=True)
-    table_head_values.rename(columns=column_dict, inplace=True)
-    table_head_values_lst = table_head_values.columns.values.tolist()  # pandas列名转list
+    valid_score_dataframe = score_dataframe.dropna(axis=1, how='all')  # 最后一行，有数据的是每题分值
+    original_dataframe.drop(original_dataframe.tail(1).index, inplace=True)  # 删除最后一行，之前的只是另存
+    valid_score_dict = valid_score_dataframe.to_dict('index').popitem()[1]  # dataframe 转 dict 类型
+
+    valid_score_dict_keys = valid_score_dict.keys()  # 获取键值 转 dict_keys 类型
+    rename_dict = {}
+    score_dict = {}
+    keep_column_list = ['姓名', '班级', '总分']  # 列表中的键值将会是数据表中保留的列
+    for i in valid_score_dict_keys:
+        j = i.replace("客 | ", "")
+        j = j.replace("主 | ", "")
+        rename_dict[i] = j
+        score_dict[j] = valid_score_dict[i]
+        keep_column_list.append(j)
+    # original_dataframe.loc[original_dataframe.index[-1]].apply(lambda x : 6 if x.empty  else x )
+    sum_score_number = sum(score_dict.values())  # 求总分
+    print('题值：', score_dict, "\n总分：    ", sum_score_number)  # 核对总分
+
+    # original_dataframe = pd.concat([original_dataframe, score_dataframe], ignore_index=True) # 合并表格
+    original_dataframe.rename(columns=rename_dict, inplace=True)  # 把列重命名
+    original_dataframe = original_dataframe[keep_column_list]  # 去掉无用列
+
     # 共有
 
-    ti_list = []
-    # print (table_head_values_lst)
-    big_problem = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', ]
-    for k in big_problem:
-        for j in table_head_values_lst:
-            if j.find(k) > -1:
-                ti_list.append(j)
+    original_dataframe["合计"] = original_dataframe["总分"].astype('float') - sum_score_number  # 处理扣总分
+    del original_dataframe['总分']  # 删除总分列
 
-    # print (ti_list)
+    for j in score_dict:  # 变成负分.astype('float')
+        original_dataframe[j] = original_dataframe[j].astype('float') - score_dict[j]
+        original_dataframe[j] = original_dataframe[j].replace(0, np.nan)
 
-    each_problem_value = table_head_values.tail(1)
-
-    problem_value = each_problem_value[ti_list].T.to_dict(orient='dict')
-    problem_value = problem_value.popitem()[1]
-    sum_values = sum(problem_value.values())
-
-    print('题值：', problem_value, "\n总分：", sum_values)
-    # problem_value = problem_value[:1]
-
-    table_head_values.drop(table_head_values.tail(1).index, inplace=True)
-
-    del_column = []
-    for i in table_head_values_lst:
-        # 目的是删除多余的列。生成每题分值dict
-        if i.find('.') > 0:
-            pass
-        elif i not in ['姓名', '班级', '总分']:
-            del_column.append(i)
-    for i in del_column:
-        table_head_values_lst.remove(i)
-    table_head_values = table_head_values[table_head_values_lst]  # 去掉无用列
-    table_head_values.drop(table_head_values.tail(1).index, inplace=True)
-    table_head_values["合计"] = table_head_values["总分"].astype('float') - sum_values  # 处理扣总分
-    del table_head_values['总分']  # 删除总分列
-    #  table_head_values_lst = table_head_values.columns.values.tolist()
-
-    for j in problem_value:  # 变成负分.astype('float')
-        table_head_values[j] = table_head_values[j].astype('float') - problem_value[j]
-        table_head_values[j] = table_head_values[j].replace(0, np.nan)
-
-    # print(table_head_values.dtypes)
-    table_head_values = table_head_values.groupby(['班级'])  # 按照班级分类
-    # print (table_head_values)
+    # print(original_dataframe.dtypes)
+    original_dataframe = original_dataframe.groupby(['班级'])  # 按照班级分类
+    print(original_dataframe)
     combined_table = []
-    for key, value in table_head_values:
-        table_head_values_lst = value.columns.values.tolist()
-        table_head_values_lst.remove('班级')
-        value = value[table_head_values_lst]
-        value.index = range(1, len(value) + 1)
-        mean_mean = list(value.mean(numeric_only=True))  # pandas的mean出错太多了
+    for key, value in original_dataframe:
 
-        mean_mean.insert(0, '平均扣分')
-        # mean_mean.insert(1,'班级')
-        # print(dict(zip(table_head_values_lst, mean_mean)))
+        del value['班级']  # 删除 班级 列
+        value.index = range(1, len(value) + 1)  # 重建索引
 
-        mean_mean = pd.DataFrame(dict(zip(table_head_values_lst, mean_mean)), index=[0])
-        # print(mean_mean)
-        tj = pd.DataFrame([value.count()])
+        mean_series = value.mean(numeric_only=True)  # 平均扣分 行
+        mean_series['姓名'] = "平均扣分"  # 重新赋值
 
-        tj['姓名'] = ['扣分人数']  # 添加姓名列，内容是后面的两项，姓名列改内容
-        tj = tj[table_head_values_lst]  # 按照table_head_values.columns的顺序排列tj表，不排序就出错了，最后两行统计扣分人数和平均扣分
-
-        # 把统计加入写入表
-
-        value = value.append(mean_mean)
-        value = value.append(tj)  # dataframe的append用加法
-
+        count_series = value.count()  # 扣分人数 行
+        count_series['姓名'] = "扣分人数"  # 重新赋值
+        value = value.append(mean_series, ignore_index=True)  # 插入平均扣分行
+        value = value.append(count_series, ignore_index=True)  # 插入扣分人数行
         combined_table.append([key, value])  # 列表append不用加法
 
     for e_class, e_class_data in combined_table:
-        print(e_class)
+        print(e_class, "班", type(e_class_data), len(e_class_data), '人')
         duo(e_class, e_class_data)
     print('OK')
 
 
 # 数据区
-column_dict = {'客 | 一.1': '一.1', '客 | 一.2': '一.2', '客 | 一.3': '一.3', '客 | 一.4': '一.4', '客 | 一.5': '一.5',
-               '客 | 一.6': '一.6', '客 | 一.7': '一.7', '客 | 一.8': '一.8', '客 | 一.9': '一.9', '客 | 一.10': '一.10',
-               '主 | 11-18': '二.11-18', '主 | 11-16': '二.11-16',
-               '主 | 三.19': '三.19', '主 | 三.20': '三.20', '主 | 19': '三.19', '主 | 20': '三.20',
-               '主 | 三.17': '三.17', '主 | 三.18': '三.18',
-               '主 | 三.21': '三.21', '主 | 三.22': '三.22', '主 | 三.23': '三.23', '主 | 三.24': '三.24',
-               '主 | 四.21': '四.21', '主 | 四.22': '四.22',
-               '主 | 六.24': '六.24',
-               '主 | 五.23': '五.23',
-               '主 | 七.25': '七.25',
-               '主 | 八.26': '八.26'}  # '':'',
 
 
 # 数据区
