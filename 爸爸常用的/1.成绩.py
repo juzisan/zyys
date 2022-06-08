@@ -160,12 +160,26 @@ def chuli(filename_str_chuli):
     rename_dict = {}
     score_dict = {}
     keep_column_list = ['姓名', '班级', '总分']  # 列表中的键值将会是数据表中保留的列
+    bignumber_index = 0
+    bignumber_list = list(bignumber_dict.keys())
     for i in valid_score_dict_keys:
         j = i.replace("客 | ", "")
         j = j.replace("主 | ", "")
+        index_str = list(j)[0]
+        '''没有汉字大题的处理'''
+        if index_str in bignumber_list:
+            bignumber_index = bignumber_list.index(index_str) +1
+        else:
+            index_str = bignumber_list[bignumber_index]
+            j = index_str + '.' + j
         rename_dict[i] = j
         score_dict[j] = valid_score_dict[i]
         keep_column_list.append(j)
+        bignumber_dict[index_str].append(j)
+    for i in list(bignumber_dict.keys()):
+        if not bignumber_dict[i]:
+            del bignumber_dict[i]
+    print(bignumber_dict)
     # original_dataframe.loc[original_dataframe.index[-1]].apply(lambda x : 6 if x.empty  else x )
     sum_score_number = sum(score_dict.values())  # 求总分
     print('题值：', score_dict, "\n总分：    ", sum_score_number)  # 核对总分
@@ -174,9 +188,11 @@ def chuli(filename_str_chuli):
     original_dataframe.rename(columns=rename_dict, inplace=True)  # 把列重命名
     original_dataframe = original_dataframe[keep_column_list]  # 去掉无用列
 
-    # 共有
+    """共有."""
+    """1.生成负分表；2.生成汇总表"""
 
     original_dataframe["合计"] = original_dataframe["总分"].astype('float') - sum_score_number  # 处理扣总分
+    analyze_dataframe = original_dataframe.copy()
     del original_dataframe['总分']  # 删除总分列
 
     for j in score_dict:  # 变成负分.astype('float')
@@ -184,7 +200,7 @@ def chuli(filename_str_chuli):
         original_dataframe[j] = original_dataframe[j].replace(0, np.nan)
 
     # print(original_dataframe.dtypes)
-    original_dataframe = original_dataframe.groupby(['班级'])  # 按照班级分类
+    original_dataframe = original_dataframe.groupby(['班级'])  # 按照班级分类,分类并不重建索引，沿用没分类之前的索引
     print(original_dataframe)
     summary_list = []
     for key, value in original_dataframe:
@@ -200,7 +216,8 @@ def chuli(filename_str_chuli):
 
         del value['班级']  # 删除 班级 列
         value.index = range(1, len(value) + 1)  # 重建索引
-        save_file(key, value)  # 保存文件
+        """1.负分表保存文件"""
+        save_file(key, value)
         print(key, "班", type(value), len(value), '人')
 
     summary_dataframe = pd.concat(summary_list, ignore_index=True)  # 合并dataframe
@@ -214,15 +231,85 @@ def chuli(filename_str_chuli):
     summary_dataframe = summary_dataframe.pivot_table(
         index='班级', columns='姓名', margins=False)  # 创建透视表，因为列名需要占用两行
     summary_dataframe = summary_dataframe[headline_new_list]  # 重现对列名进行格式化
-    save_file2(p_title, summary_dataframe)  # 保存到文件
-
+    '''2.汇总表保存文件'''
+    save_file2(p_title, summary_dataframe)
     print(summary_dataframe)
+    '''3.数据分析'''
+    '''3.1.全年级分析'''
+    '''总人数count()后面不用[]，有筛选的就要用[]了'''
+    valid_bignumber_dict = {}
+    for bignumber_key, bignumber_value in bignumber_dict.items():
+        analyze_dataframe[bignumber_key] = analyze_dataframe[bignumber_value].sum(axis=1)  # 根据列名求和
+        valid_bignumber_dict[bignumber_key] = 
+        
+    keep_column_list = ['班级', '总分'] + list(bignumber_dict.keys())
 
+    analyze_dataframe = analyze_dataframe[keep_column_list]  # 去掉无用列
+    total_number = analyze_dataframe['总分'].count()
+    pass_number = analyze_dataframe[analyze_dataframe["总分"] > sum_score_number*0.59].count()["总分"]  # 及格人数
+    excellent_number = analyze_dataframe[analyze_dataframe["总分"] > 84.6].count()["总分"]  # 优秀人数
+    f_number = analyze_dataframe[analyze_dataframe["总分"] < 39.7].count()["总分"]  # 过差人数
+    '''新建一个空的dataframe，索引为all'''
+    total_dataFrame = pd.DataFrame(index=["全年级"])
+    total_dict = {'总人数': 'total_number',
+                   '总分': 'sum_score_number',
+                   '平均分': "round(analyze_dataframe['总分'].mean(),1)",
+                   '及格人数': 'pass_number',
+                   '及格率': 'round(pass_number/total_number*100,1)',
+                   '优秀人数': 'excellent_number',
+                   '优秀率': 'round(excellent_number/total_number*100,1)',
+                   '过差人数': 'f_number',
+                   '过差率': 'round(f_number/total_number*100,1)',
+                   }
+
+    for x in total_dict:
+        exec("total_dataFrame['" + x + "'] = " + total_dict[x])
+
+    
+    print(total_dataFrame)
+    '''3.1.全年级分析'''
+    '''3.2.每班分析'''
+    class_dict = {'本题满分': 'manfen_zhi',
+                   '满分人数': 'manfen_renshu',
+                   '满分率': 'round(manfen_renshu/zong_renshu*100,1)',
+                   '及格人数': 'jige_renshu_zutifenxi',
+                   '及格率': 'round(jige_renshu_zutifenxi/zong_renshu*100,1)',
+                   '0分人数': 'lingfen_renshu_zutifenxi',
+                   '0分率': 'round(lingfen_renshu_zutifenxi/zong_renshu*100,1)',
+                   '本题平均分': 'round(yilie.mean(),1)',
+                   '本题得分率': 'round(yilie.sum()/zong_renshu/manfen_zhi*100,1)',
+                   '最高分': 'yilie.max()',
+                   '最低分': 'yilie.min()',
+                   }
+    
+
+
+    analyze_dataframe = analyze_dataframe.groupby(['班级'])  # 按照班级分类
+    print(bignumber_dict)
+    for key, value in analyze_dataframe:
+        class_dataFrame = pd.DataFrame(index=[key])
+        value.index = range(1, len(value) + 1)  # 重建索引
+        perfect_number = value[value["总分"] > sum_score_number*0.99].count()["总分"]
+        pass_number = value[value["总分"] > sum_score_number * 0.59].count()["总分"]
+        zero_number = value[value["总分"] == 0].count()["总分"]
+
+
+
+            
+
+        print(key,value.tail(),)
+
+
+        for x in class_dict:
+            exec("class_dataFrame['" + x + "'] = " + class_dict[x])
+        print(class_dataFrame)
+    del total_number, pass_number, excellent_number, f_number, perfect_number, zero_number  # 为了不显示错误
     print('OK')
 
 
 # 数据区
 
+bignumber_dict = {'一':[],'二':[],'三':[],'四':[],'五':[],'六':[],'七':[],'八':[],'九':[],'十':[] }
 
 # 数据区
 
