@@ -159,6 +159,35 @@ def save_file3(*data_list):
     del wb, ws
 
 
+def tiaozh(num_dataframe):
+    big_small_num_list = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
+    num_dataframe = num_dataframe.T
+    num_dataframe = num_dataframe.reset_index()
+    num_dataframe.columns = ["题号", "满分值"]
+    num_dataframe['题号备份'] = num_dataframe['题号']
+    # num_dataframe['主客观'], num_dataframe['题号'] = num_dataframe['题号'].str.split('|', 1).str
+    num_dataframe[['主客观', '题号']] = num_dataframe['题号'].str.split('|', n=1, expand=True)
+    num_dataframe['题号'].replace(regex=True, inplace=True, to_replace=r' ', value=r'')
+    num_dataframe[['大题', '小题']] = num_dataframe['题号'].str.split('.', n=1, expand=True)
+    index_num = num_dataframe[num_dataframe['小题'].isna()].index[0]
+    num_dataframe.loc[index_num, '小题'] = num_dataframe.loc[index_num, '大题']
+    list_index = big_small_num_list.index(num_dataframe.loc[index_num - 1, '大题']) + 1
+    num_dataframe.loc[index_num, '大题'] = big_small_num_list[list_index]
+    # num_dataframe = num_dataframe[['大题', '小题', "满分值", '题号备份']]
+    num_dataframe['题号'] = num_dataframe['大题'] + '.' + num_dataframe['小题']
+    big_set = num_dataframe['大题'].unique()
+    rename_dict = num_dataframe.set_index(['题号备份'])["题号"].to_dict()
+    score_dict = num_dataframe.set_index(['题号'])["满分值"].to_dict()
+    big_num_list = []
+    big_name_list = []
+    for i in big_set:
+        big_num_list.append([i, num_dataframe[num_dataframe['大题'] == i].sum()['满分值']])
+        big_name_list.append([i, num_dataframe['题号'][num_dataframe['大题'] == i].tolist()])
+    # print("@big_num_list：\n", big_num_list, "\n@big_name_list：\n",big_name_list, "\n@rename_dict：\n",rename_dict)
+    # print( num_dataframe)
+    return rename_dict, score_dict, big_num_list, big_name_list
+
+
 def chuli(filename_str_chuli):
     """共有."""
     p_title = re.findall('^小分表 - ([\\w\\W]*).xlsx$', filename_str_chuli)[0]
@@ -172,51 +201,16 @@ def chuli(filename_str_chuli):
 
     valid_score_dataframe = score_dataframe.dropna(axis=1, how='all')  # 最后一行，有数据的是每题分值
     original_dataframe.drop(original_dataframe.tail(1).index, inplace=True)  # 删除最后一行，之前的只是另存
-    valid_score_dict = valid_score_dataframe.to_dict('index').popitem()[1]  # dataframe 转 dict 类型
-
-    valid_score_dict_keys = valid_score_dict.keys()  # 获取键值 转 dict_keys 类型
-    rename_dict = {}
-    score_dict = {}
-    keep_column_list = ['姓名', '班级', '总分']  # 列表中的键值将会是数据表中保留的列
-    bignumber_index = 0
-    bignumber_list = list(bignumber_dict.keys())
-    for i in valid_score_dict_keys:
-        j = i.replace("客 | ", "")
-        j = j.replace("主 | ", "")
-        index_str = list(j)[0]
-        '''没有汉字大题的处理'''
-        if index_str in bignumber_list:
-            bignumber_index = bignumber_list.index(index_str) + 1
-        else:
-            index_str = bignumber_list[bignumber_index]
-            j = index_str + '.' + j
-        rename_dict[i] = j
-        score_dict[j] = valid_score_dict[i]
-        keep_column_list.append(j)
-        bignumber_dict[index_str].append(j)
-    for i in list(bignumber_dict.keys()):
-        if not bignumber_dict[i]:
-            del bignumber_dict[i]
-    print(bignumber_dict)
-
-    my_df = pd.DataFrame.from_dict(score_dict, orient='index')
-    my_df.columns = ['题值']
-    my_df['题号'] = my_df.index
-    my_df['大题'] = my_df['题号'].str.slice(0, 1)
-    big_sum_score_df = my_df.groupby(['大题']).agg({'题值': 'sum'})
-    big_sum_score_df['索引'] = big_sum_score_df.index
-    big_sum_score_df['索引'] = big_sum_score_df['索引'].map(big_tran_num_dict)
-    big_sum_score_df.sort_values(by=['索引'], inplace=True)
-    del big_sum_score_df['索引']
-    print(big_sum_score_df)
-
+    rename_dict, score_dict, big_num_list, big_name_list = tiaozh(valid_score_dataframe)  # 解压缩返回值
+    # print(rename_dict, score_dict, big_num_list, big_name_list)
     # original_dataframe.loc[original_dataframe.index[-1]].apply(lambda x : 6 if x.empty  else x )
-    sum_score_number = sum(score_dict.values())  # 求总分
-    print('题值：', score_dict, "\n总分：    ", sum_score_number)  # 核对总分
+    sum_score_number = sum([j for i, j in big_num_list])  # 求总分
+    print("\n总分：    ", sum_score_number)  # 核对总分
 
     # original_dataframe = pd.concat([original_dataframe, score_dataframe], ignore_index=True) # 合并表格
-    original_dataframe.rename(columns=rename_dict, inplace=True)  # 把列重命名
-    original_dataframe = original_dataframe[keep_column_list]  # 去掉无用列
+    original_dataframe.rename(columns=rename_dict, inplace=True)  # 把列重命名,tiaozh
+    original_dataframe = original_dataframe[['姓名', '班级', '总分'] + list(rename_dict.values())]  # 去掉无用列,tiaozh
+    print(original_dataframe)
 
     """共有."""
     """
@@ -272,14 +266,14 @@ def chuli(filename_str_chuli):
 
     '''3.数据分析'''
     '''总人数count()后面不用[]，有筛选的就要用[]了'''
-    valid_bignumber_dict = {}
-    for bignumber_key, bignumber_value in bignumber_dict.items():
+    big_keep_list = []
+
+    for bignumber_key, bignumber_value in big_name_list:  # 返回值来自于tiaozh
+        print(bignumber_key, bignumber_value)
         analyze_dataframe[bignumber_key] = analyze_dataframe[bignumber_value].sum(axis=1)  # 根据列名求和
-        valid_bignumber_dict[bignumber_key] = 2
+        big_keep_list.append(bignumber_key)
 
-    keep_column_list = ['班级', '总分'] + list(bignumber_dict.keys())
-
-    analyze_dataframe = analyze_dataframe[keep_column_list]  # 去掉无用列
+    analyze_dataframe = analyze_dataframe[['班级', '总分'] + big_keep_list]  # 去掉无用列
 
     analyze_1_dataframe = analyze_dataframe.copy()  # 复制数据表
     analyze_list = [['全年级', analyze_1_dataframe]]
@@ -306,7 +300,7 @@ def chuli(filename_str_chuli):
         series_1['过差率'] = round(series_1['过差人数'] / total_people * 100, 1)
         class_summary_dataframe = class_summary_dataframe.append(series_1, ignore_index=True)
 
-        for problem_num, score_num in big_sum_score_df.itertuples():
+        for problem_num, score_num in big_num_list:
             series_2 = pd.Series(key, ['班级'])
             series_2['题号'] = problem_num
             series_2['本题满分'] = score_num
@@ -329,10 +323,6 @@ def chuli(filename_str_chuli):
 
 
 # 数据区
-
-bignumber_dict = {'一': [], '二': [], '三': [], '四': [], '五': [], '六': [], '七': [], '八': [], '九': [], '十': []}
-
-big_tran_num_dict = {'一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10}
 
 
 # 数据区
