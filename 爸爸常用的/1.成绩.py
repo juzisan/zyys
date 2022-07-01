@@ -169,10 +169,20 @@ def tiaozh(num_dataframe):
     num_dataframe[['主客观', '题号']] = num_dataframe['题号'].str.split('|', n=1, expand=True)
     num_dataframe['题号'].replace(regex=True, inplace=True, to_replace=r' ', value=r'')
     num_dataframe[['大题', '小题']] = num_dataframe['题号'].str.split('.', n=1, expand=True)
-    index_num = num_dataframe[num_dataframe['小题'].isna()].index[0]
-    num_dataframe.loc[index_num, '小题'] = num_dataframe.loc[index_num, '大题']
-    list_index = big_small_num_list.index(num_dataframe.loc[index_num - 1, '大题']) + 1
-    num_dataframe.loc[index_num, '大题'] = big_small_num_list[list_index]
+    if_na = num_dataframe[num_dataframe['小题'].isna()].index.tolist()
+
+    if if_na:
+        print('is', if_na)
+        for index_num in if_na:
+            num_dataframe.loc[index_num, '小题'] = num_dataframe.loc[index_num, '大题']
+            print(num_dataframe.loc[index_num, '小题'])
+            num_dataframe.loc[index_num, '大题'] = np.nan
+        for index_num in if_na:
+            list_index = big_small_num_list.index(num_dataframe.loc[index_num - 1, '大题'])+1
+            num_dataframe.loc[index_num, '大题'] = big_small_num_list[list_index]
+    else:
+        print('not', if_na)
+
     # num_dataframe = num_dataframe[['大题', '小题', "满分值", '题号备份']]
     num_dataframe['题号'] = num_dataframe['大题'] + '.' + num_dataframe['小题']
     big_set = num_dataframe['大题'].unique()
@@ -183,9 +193,10 @@ def tiaozh(num_dataframe):
     for i in big_set:
         big_num_list.append([i, num_dataframe[num_dataframe['大题'] == i].sum()['满分值']])
         big_name_list.append([i, num_dataframe['题号'][num_dataframe['大题'] == i].tolist()])
-    # print("@big_num_list：\n", big_num_list, "\n@big_name_list：\n",big_name_list, "\n@rename_dict：\n",rename_dict)
+    # print(big_num_list, big_name_list, rename_dict, score_dict, sep='\n\n')
+
     # print( num_dataframe)
-    return rename_dict, score_dict, big_num_list, big_name_list
+    return rename_dict, score_dict, big_num_list, big_name_list 
 
 
 def chuli(filename_str_chuli):
@@ -332,7 +343,10 @@ def main():
     """程序开始."""
     names = os.listdir(os.path.split(os.path.realpath(__file__))[0])
     names = [i for i in names if re.match('小分表.*.xlsx', i)]
-    chuli(names[0])
+    if names:
+        chuli(names[0])
+    else:
+        print('缺少文件')
 
 
 if __name__ == "__main__":
