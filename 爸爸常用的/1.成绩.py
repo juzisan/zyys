@@ -5,6 +5,7 @@
 
 import os
 import re
+import sys
 import pandas as pd
 import numpy as np
 from openpyxl import Workbook
@@ -13,6 +14,7 @@ from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.styles import Alignment, Border, Side, Font
 import time
 import locale
+
 
 locale.setlocale(locale.LC_COLLATE, 'zh_CN.UTF8')  # 设置本地语言比较习惯为中文
 
@@ -160,7 +162,6 @@ def save_file3(*data_list):
 
 
 def tiaozh(num_dataframe):
-    big_small_num_list = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
     num_dataframe = num_dataframe.T
     num_dataframe = num_dataframe.reset_index()
     num_dataframe.columns = ["题号", "满分值"]
@@ -172,16 +173,10 @@ def tiaozh(num_dataframe):
     if_na = num_dataframe[num_dataframe['小题'].isna()].index.tolist()
 
     if if_na:
-        print('is', if_na)
-        for index_num in if_na:
-            num_dataframe.loc[index_num, '小题'] = num_dataframe.loc[index_num, '大题']
-            print(num_dataframe.loc[index_num, '小题'])
-            num_dataframe.loc[index_num, '大题'] = np.nan
-        for index_num in if_na:
-            list_index = big_small_num_list.index(num_dataframe.loc[index_num - 1, '大题'])+1
-            num_dataframe.loc[index_num, '大题'] = big_small_num_list[list_index]
+        print('题号有错误', if_na, "退出程序")
+        sys.exit()
     else:
-        print('not', if_na)
+        print('题号无错误')
 
     # num_dataframe = num_dataframe[['大题', '小题', "满分值", '题号备份']]
     num_dataframe['题号'] = num_dataframe['大题'] + '.' + num_dataframe['小题']
@@ -221,7 +216,8 @@ def chuli(filename_str_chuli):
     # original_dataframe = pd.concat([original_dataframe, score_dataframe], ignore_index=True) # 合并表格
     original_dataframe.rename(columns=rename_dict, inplace=True)  # 把列重命名,tiaozh
     original_dataframe = original_dataframe[['姓名', '班级', '总分'] + list(rename_dict.values())]  # 去掉无用列,tiaozh
-    print(original_dataframe)
+    print('整理后的dataframe：\n')
+    # print(original_dataframe)
 
     """共有."""
     """
@@ -239,9 +235,8 @@ def chuli(filename_str_chuli):
         original_dataframe[j] = original_dataframe[j].astype('float') - score_dict.get(j)
         original_dataframe[j] = original_dataframe[j].replace(0, np.nan)
 
-    # print(original_dataframe.dtypes)
     original_dataframe = original_dataframe.groupby(['班级'])  # 按照班级分类,分类并不重建索引，沿用没分类之前的索引
-    print(original_dataframe)
+    # print(original_dataframe)
     summary_list = []
     for key, value in original_dataframe:
         mean_series = value.mean(numeric_only=True)  # 平均扣分 行
@@ -258,7 +253,6 @@ def chuli(filename_str_chuli):
         value.index = range(1, len(value) + 1)  # 重建索引
         """1.负分表保存文件"""
         save_file(key, value)
-        print(key, "班", type(value), len(value), '人')
 
     summary_dataframe = pd.concat(summary_list, ignore_index=True)  # 合并dataframe
     headline_list = summary_dataframe.columns.values.tolist()  # 把列名转换成 list 格式
@@ -273,14 +267,15 @@ def chuli(filename_str_chuli):
     summary_dataframe = summary_dataframe[headline_new_list]  # 重现对列名进行格式化
     '''2.汇总表保存文件'''
     save_file2(p_title, summary_dataframe)
-    print(summary_dataframe)
+    print('汇总表：\n')
+    # print(summary_dataframe)
 
     '''3.数据分析'''
     '''总人数count()后面不用[]，有筛选的就要用[]了'''
     big_keep_list = []
-
+    print('汇总题号：\n')
     for bignumber_key, bignumber_value in big_name_list:  # 返回值来自于tiaozh
-        print(bignumber_key, bignumber_value)
+        # print(bignumber_key, bignumber_value)
         analyze_dataframe[bignumber_key] = analyze_dataframe[bignumber_value].sum(axis=1)  # 根据列名求和
         big_keep_list.append(bignumber_key)
 
@@ -326,8 +321,8 @@ def chuli(filename_str_chuli):
             series_2['最高分'] = value[problem_num].max()
             series_2['最低分'] = value[problem_num].min()
             class_dataframe = class_dataframe.append(series_2, ignore_index=True)
-
-    print(class_summary_dataframe, '\n\n', class_dataframe)
+    print('描述dataframe：\n')
+    # print(class_summary_dataframe, '\n\n', class_dataframe)
     save_file3(class_summary_dataframe, class_dataframe)
 
     print('OK')
@@ -344,7 +339,14 @@ def main():
     names = os.listdir(os.path.split(os.path.realpath(__file__))[0])
     names = [i for i in names if re.match('小分表.*.xlsx', i)]
     if names:
-        chuli(names[0])
+        if len(names) > 1:
+            print('请输入序号：')
+            for i, value in enumerate(names):
+                print(i, '代表：  ', value)
+            select_num = int(input("输入转换的序号："))
+            chuli(names[select_num])
+        else:
+            chuli(names[0])
     else:
         print('缺少文件')
 
