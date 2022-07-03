@@ -1,6 +1,7 @@
 """Created on Sat Oct 19 19:52:49 2019.
 
 @author: Mrlily
+整理爸爸的试卷分析
 """
 
 import os
@@ -140,6 +141,7 @@ def save_file2(filename_str, data_dataframe):
     ws['D1'].font = Font(size=20)  # 设置字号大小
 
     wb.save('汇总.xlsx')  # excel写入sheet
+    os.startfile('汇总.xlsx')
     del wb, ws
 
 
@@ -158,27 +160,30 @@ def save_file3(*data_list):
             ws.delete_rows(i)  # 删除行，注意会不会删错
     ws.delete_cols(1)  # 删除列
     wb.save('描述.xlsx')  # excel写入sheet
+    os.startfile('描述.xlsx')
     del wb, ws
 
 
 def tiaozh(num_dataframe):
-    num_dataframe = num_dataframe.T
+    num_dataframe = num_dataframe.dropna(axis=1, how='all')  # 最后一行，有数据的是每题分值
+    num_dataframe = num_dataframe.T  # 行转列
     num_dataframe = num_dataframe.reset_index()
     num_dataframe.columns = ["题号", "满分值"]
+    num_dataframe["满分值"].replace(r'得分/共(\d+)分', r'\1', regex=True, inplace=True)  # 替换
+    num_dataframe["满分值"] = num_dataframe["满分值"].astype('int', copy=False)
     num_dataframe['题号备份'] = num_dataframe['题号']
     # num_dataframe['主客观'], num_dataframe['题号'] = num_dataframe['题号'].str.split('|', 1).str
     num_dataframe[['主客观', '题号']] = num_dataframe['题号'].str.split('|', n=1, expand=True)
     num_dataframe['题号'].replace(regex=True, inplace=True, to_replace=r' ', value=r'')
     num_dataframe[['大题', '小题']] = num_dataframe['题号'].str.split('.', n=1, expand=True)
     if_na = num_dataframe[num_dataframe['小题'].isna()].index.tolist()
-
+    
     if if_na:
         print('题号有错误', if_na, "退出程序")
         sys.exit()
     else:
         print('题号无错误')
 
-    # num_dataframe = num_dataframe[['大题', '小题', "满分值", '题号备份']]
     num_dataframe['题号'] = num_dataframe['大题'] + '.' + num_dataframe['小题']
     big_set = num_dataframe['大题'].unique()
     rename_dict = num_dataframe.set_index(['题号备份'])["题号"].to_dict()
@@ -188,9 +193,9 @@ def tiaozh(num_dataframe):
     for i in big_set:
         big_num_list.append([i, num_dataframe[num_dataframe['大题'] == i].sum()['满分值']])
         big_name_list.append([i, num_dataframe['题号'][num_dataframe['大题'] == i].tolist()])
+    # print(num_dataframe)
+    # print(num_dataframe.dtypes)
     # print(big_num_list, big_name_list, rename_dict, score_dict, sep='\n\n')
-
-    # print( num_dataframe)
     return rename_dict, score_dict, big_num_list, big_name_list 
 
 
@@ -202,18 +207,15 @@ def chuli(filename_str_chuli):
         '班级': 'str', })  # 读 excel '总分':'int'
     original_dataframe = original_dataframe.sort_values(by=['总分'], ascending=False)
     original_dataframe.index = range(1, len(original_dataframe) + 1)  # 重建索引 从1开始
-    score_dataframe = original_dataframe.tail(1).applymap(lambda x: int(
-        re.search(r'得分/共(\d+)分', x).group(1)), na_action='ignore')  # 后面还得用它合并
-
-    valid_score_dataframe = score_dataframe.dropna(axis=1, how='all')  # 最后一行，有数据的是每题分值
-    original_dataframe.drop(original_dataframe.tail(1).index, inplace=True)  # 删除最后一行，之前的只是另存
-    rename_dict, score_dict, big_num_list, big_name_list = tiaozh(valid_score_dataframe)  # 解压缩返回值
+    
+    rename_dict, score_dict, big_num_list, big_name_list = tiaozh(original_dataframe.tail(1).copy(deep=True))
+    
     # print(rename_dict, score_dict, big_num_list, big_name_list)
-    # original_dataframe.loc[original_dataframe.index[-1]].apply(lambda x : 6 if x.empty  else x )
     sum_score_number = sum([j for i, j in big_num_list])  # 求总分
     print("\n总分：    ", sum_score_number)  # 核对总分
 
     # original_dataframe = pd.concat([original_dataframe, score_dataframe], ignore_index=True) # 合并表格
+    original_dataframe.drop(original_dataframe.tail(1).index, inplace=True)  # 删除最后一行，之前的只是另存
     original_dataframe.rename(columns=rename_dict, inplace=True)  # 把列重命名,tiaozh
     original_dataframe = original_dataframe[['姓名', '班级', '总分'] + list(rename_dict.values())]  # 去掉无用列,tiaozh
     print('整理后的dataframe：\n')
@@ -227,11 +229,12 @@ def chuli(filename_str_chuli):
     """
     original_dataframe["合计"] = original_dataframe["总分"].astype('float') - sum_score_number  # 处理扣总分
     """复制到分析表"""
-    analyze_dataframe = original_dataframe.copy()
+    analyze_dataframe = original_dataframe.copy(deep=True)
     """复制到分析表"""
     del original_dataframe['总分']  # 删除总分列
 
     for j in score_dict:  # 变成负分.astype('float')
+    
         original_dataframe[j] = original_dataframe[j].astype('float') - score_dict.get(j)
         original_dataframe[j] = original_dataframe[j].replace(0, np.nan)
 
@@ -247,7 +250,7 @@ def chuli(filename_str_chuli):
         value = value.append(mean_series, ignore_index=True)  # 插入平均扣分行
         value = value.append(count_series, ignore_index=True)  # 插入扣分人数行
         value['班级'] = str(key) + '班'
-        summary_list.append(value[-2:].copy())
+        summary_list.append(value[-2:].copy(deep=True))
 
         del value['班级']  # 删除 班级 列
         value.index = range(1, len(value) + 1)  # 重建索引
@@ -276,13 +279,13 @@ def chuli(filename_str_chuli):
     print('汇总题号：\n')
     for bignumber_key, bignumber_value in big_name_list:  # 返回值来自于tiaozh
         # print(bignumber_key, bignumber_value)
-        analyze_dataframe[bignumber_key] = analyze_dataframe[bignumber_value].sum(axis=1)  # 根据列名求和
+        analyze_dataframe[bignumber_key] = analyze_dataframe[bignumber_value].sum(axis=1)  # 根据列名求和,来自于tiaozh
         big_keep_list.append(bignumber_key)
 
     analyze_dataframe = analyze_dataframe[['班级', '总分'] + big_keep_list]  # 去掉无用列
 
-    analyze_1_dataframe = analyze_dataframe.copy()  # 复制数据表
-    analyze_list = [['全年级', analyze_1_dataframe]]
+    # analyze_1_dataframe = analyze_dataframe.copy(deep=True)  
+    analyze_list = [['全年级', analyze_dataframe.copy(deep=True)]]  # 复制数据表
 
     analyze_dataframe = analyze_dataframe.groupby(['班级'])  # 按照班级分类
     for key, value in analyze_dataframe:
