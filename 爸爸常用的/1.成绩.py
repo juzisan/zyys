@@ -2,6 +2,27 @@
 
 @author: Mrlily
 整理爸爸的试卷分析
+如果题号有错误，命名方式为    【客 | 一.1】
+如果错误太多，再想办法重命名题号
+一、生成负分表；
+1.表头是班级，每班一个表
+2.第一列是序号，按总分成绩排名
+3.第二列是姓名
+4.每题一列，得分转扣分，没扣分不显示，最后一列是合计
+5.最后两列分别是平均扣分（扣分总和除以人数）和扣分人数
+6.sheet重命名为班级
+二、生成汇总表；
+1.表头，合并表格并居中，字体增大
+2.第一列为班级名，之后是每题扣分人数和平均扣分值
+3.用pandas透视表把行转列
+4.排列顺序安装班级名
+5.横版页面布局，分两页
+6.表格加边框
+三、数据分析；
+1.对班级统计
+班级	    人数    总分    平均分    及格人数    及格率    优秀人数    优秀率    过差人数    过差率
+2.对每题统计
+班级    题号    本题满分    满分人数    满分率    及格人数    及格率    0分人数    0分率    本题平均分    本题得分率    最高分    最低分
 """
 
 import os
@@ -149,9 +170,9 @@ def save_file3(*data_list):
     wb = Workbook()  # 创建workbook实例
     ws = wb.active
 
-    for i in data_list:
-        for r in dataframe_to_rows(i, index=True, header=True):
-            ws.append(r)
+    for data_df in data_list:
+        for row in dataframe_to_rows(data_df, index=True, header=True):
+            ws.append(row)
     rows_num = ws.max_row
 
     for i in range(1, rows_num + 1):
@@ -179,12 +200,12 @@ def tiaozh(num_dataframe):
     if_na = num_dataframe[num_dataframe['小题'].isna()].index.tolist()
     
     if if_na:
-        print('题号有错误', if_na, "退出程序")
+        print(f'题号有错误:  {if_na}\n退出程序')
         sys.exit()
     else:
         print('题号无错误')
 
-    num_dataframe['题号'] = num_dataframe['大题'] + '.' + num_dataframe['小题']
+    # num_dataframe['题号'] = num_dataframe['大题'] + '.' + num_dataframe['小题']
     big_set = num_dataframe['大题'].unique()
     rename_dict = num_dataframe.set_index(['题号备份'])["题号"].to_dict()
     score_dict = num_dataframe.set_index(['题号'])["满分值"].to_dict()
@@ -202,7 +223,7 @@ def tiaozh(num_dataframe):
 def chuli(filename_str_chuli):
     """共有."""
     p_title = re.findall('^小分表 - ([\\w\\W]*).xlsx$', filename_str_chuli)[0]
-    print(p_title)
+    print(f'考试标题： {p_title}')
     original_dataframe = pd.read_excel(filename_str_chuli, skiprows=1, dtype={
         '班级': 'str', })  # 读 excel '总分':'int'
     original_dataframe = original_dataframe.sort_values(by=['总分'], ascending=False)
@@ -212,7 +233,7 @@ def chuli(filename_str_chuli):
     
     # print(rename_dict, score_dict, big_num_list, big_name_list)
     sum_score_number = sum([j for i, j in big_num_list])  # 求总分
-    print("\n总分：    ", sum_score_number)  # 核对总分
+    print(f"\n总分：   {sum_score_number}  ")  # 核对总分
 
     # original_dataframe = pd.concat([original_dataframe, score_dataframe], ignore_index=True) # 合并表格
     original_dataframe.drop(original_dataframe.tail(1).index, inplace=True)  # 删除最后一行，之前的只是另存
@@ -313,9 +334,9 @@ def chuli(filename_str_chuli):
             series_2 = pd.Series(key, ['班级'])
             series_2['题号'] = problem_num
             series_2['本题满分'] = score_num
-            series_2['满分人数'] = value[value[problem_num] > score_num * 0.99].count()[problem_num]
+            series_2['满分人数'] = value[value[problem_num] > score_num * 0.997].count()[problem_num]
             series_2['满分率'] = round(series_2['满分人数'] / total_people * 100, 1)
-            series_2['及格人数'] = value[value[problem_num] > score_num * 0.59].count()[problem_num]
+            series_2['及格人数'] = value[value[problem_num] > score_num * 0.597].count()[problem_num]
             series_2['及格率'] = round(series_2['及格人数'] / total_people * 100, 1)
             series_2['0分人数'] = value[value[problem_num] == 0].count()[problem_num]
             series_2['0分率'] = round(series_2['0分人数'] / total_people * 100, 1)
@@ -325,7 +346,7 @@ def chuli(filename_str_chuli):
             series_2['最低分'] = value[problem_num].min()
             class_dataframe = class_dataframe.append(series_2, ignore_index=True)
     print('描述dataframe：\n')
-    # print(class_summary_dataframe, '\n\n', class_dataframe)
+    # print(f'{class_summary_dataframe}\n\n{class_dataframe}')
     save_file3(class_summary_dataframe, class_dataframe)
 
     print('OK')
