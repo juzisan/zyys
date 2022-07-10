@@ -23,9 +23,11 @@
 班级	    人数    总分    平均分    及格人数    及格率    优秀人数    优秀率    过差人数    过差率
 2.对每题统计
 班级    题号    本题满分    满分人数    满分率    及格人数    及格率    0分人数    0分率    本题平均分    本题得分率    最高分    最低分
+根据模板生成每班的word试卷分析
 """
 
 import os
+import shutil
 import re
 import sys
 import pandas as pd
@@ -36,7 +38,7 @@ from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.styles import Alignment, Border, Side, Font
 import time
 import locale
-
+from win32com.client import Dispatch
 
 locale.setlocale(locale.LC_COLLATE, 'zh_CN.UTF8')  # 设置本地语言比较习惯为中文
 
@@ -184,21 +186,65 @@ def save_file3(*data_list):
     os.startfile('描述.xlsx')
     del wb, ws
 
+    class_names_set = data_list[0]['班级'].unique()
+    table_1_df = data_list[0].groupby(['班级'])
+    table_2_df = data_list[1].groupby(['班级'])
+    print(class_names_set)
+    dir_str = os.getcwd()  # 本地目录
+    src_file = os.path.join(dir_str, '试卷分析模板.doc')
+
+    msword = Dispatch('Word.Application')  # 打开微软word程序，后面得关闭
+    msword.Visible = 1  # 显示word窗口
+    for name_of_class in class_names_set:
+        file_name = name_of_class + '试卷分析.doc'
+        dst_file = os.path.join(dir_str, file_name)
+        if os.path.exists(dst_file):
+            os.unlink(dst_file)  # 文件存在则删除文件，不然文件存在的时候，复制会出错
+        shutil.copyfile(src_file, dst_file)  # 复制文件
+        print(f'{dst_file = }')
+        doc = msword.Documents.Open(dst_file)  # 打开word文件
+        table_s = doc.Tables  # word文件中所有表格的集合
+        num_table = doc.Tables.Count  # word文件中有几个表格，序号从1开始，不是0
+        print(f'{num_table = }\n')
+        # 一、抽样成绩统计
+        num_columns = table_s(1).Range.Columns.Count  # 表格的列数
+        # print(f'{num_rows = }', f'{num_columns = }')
+        for num_col in range(1, num_columns + 1):  # 只有一行，所以行数为1
+            table_s(1).Cell(2, num_col).Range.Text = str(
+                table_1_df.get_group(name_of_class).iloc[0, num_col - 1])  # 列对应的dataframe表，第一行是0，不算索引第一列是0
+
+        # 二、逐题分析
+        num_rows = table_s(2).Range.Rows.Count  # 表格的行数
+        num_columns = table_s(2).Range.Columns.Count
+        # print(f'{num_rows = }', f'{num_columns = }')
+        for num_row in range(3, num_rows + 1):
+            for num_col in range(1, num_columns + 1):
+                table_s(2).Cell(num_row, num_col).Range.Text = str(
+                    table_2_df.get_group(name_of_class).iloc[num_row - 3, num_col])
+                # word的行从第3行开始，dataframe第1列是班级，舍弃，所以列从1开始
+        doc.Save()
+        doc.Close()  # 保存并退出
+    msword.Quit()  # 手动关闭word程序
+
 
 def tiaozh(num_dataframe):
     num_dataframe = num_dataframe.dropna(axis=1, how='all')  # 最后一行，有数据的是每题分值
     num_dataframe = num_dataframe.T  # 行转列
     num_dataframe = num_dataframe.reset_index()
     num_dataframe.columns = ["题号", "满分值"]
-    num_dataframe["满分值"].replace(r'得分/共(\d+)分', r'\1', regex=True, inplace=True)  # 替换
+    num_dataframe["满分值"].replace(
+        r'得分/共(\d+)分', r'\1', regex=True, inplace=True)  # 替换
     num_dataframe["满分值"] = num_dataframe["满分值"].astype('int', copy=False)
     num_dataframe['题号备份'] = num_dataframe['题号']
     # num_dataframe['主客观'], num_dataframe['题号'] = num_dataframe['题号'].str.split('|', 1).str
-    num_dataframe[['主客观', '题号']] = num_dataframe['题号'].str.split('|', n=1, expand=True)
-    num_dataframe['题号'].replace(regex=True, inplace=True, to_replace=r' ', value=r'')
-    num_dataframe[['大题', '小题']] = num_dataframe['题号'].str.split('.', n=1, expand=True)
+    num_dataframe[['主客观', '题号']] = num_dataframe['题号'].str.split(
+        '|', n=1, expand=True)
+    num_dataframe['题号'].replace(
+        regex=True, inplace=True, to_replace=r' ', value=r'')
+    num_dataframe[['大题', '小题']] = num_dataframe['题号'].str.split(
+        '.', n=1, expand=True)
     if_na = num_dataframe[num_dataframe['小题'].isna()].index.tolist()
-    
+
     if if_na:
         print(f'题号有错误:  {if_na}\n退出程序')
         sys.exit()
@@ -212,12 +258,14 @@ def tiaozh(num_dataframe):
     big_num_list = []
     big_name_list = []
     for i in big_set:
-        big_num_list.append([i, num_dataframe[num_dataframe['大题'] == i].sum()['满分值']])
-        big_name_list.append([i, num_dataframe['题号'][num_dataframe['大题'] == i].tolist()])
+        big_num_list.append(
+            [i, num_dataframe[num_dataframe['大题'] == i].sum()['满分值']])
+        big_name_list.append(
+            [i, num_dataframe['题号'][num_dataframe['大题'] == i].tolist()])
     # print(num_dataframe)
     # print(num_dataframe.dtypes)
     # print(big_num_list, big_name_list, rename_dict, score_dict, sep='\n\n')
-    return rename_dict, score_dict, big_num_list, big_name_list 
+    return rename_dict, score_dict, big_num_list, big_name_list
 
 
 def chuli(filename_str_chuli):
@@ -226,19 +274,25 @@ def chuli(filename_str_chuli):
     print(f'考试标题： {p_title}')
     original_dataframe = pd.read_excel(filename_str_chuli, skiprows=1, dtype={
         '班级': 'str', })  # 读 excel '总分':'int'
-    original_dataframe = original_dataframe.sort_values(by=['总分'], ascending=False)
-    original_dataframe.index = range(1, len(original_dataframe) + 1)  # 重建索引 从1开始
-    
-    rename_dict, score_dict, big_num_list, big_name_list = tiaozh(original_dataframe.tail(1).copy(deep=True))
-    
+    original_dataframe = original_dataframe.sort_values(
+        by=['总分'], ascending=False)
+    original_dataframe.index = range(
+        1, len(original_dataframe) + 1)  # 重建索引 从1开始
+
+    rename_dict, score_dict, big_num_list, big_name_list = tiaozh(
+        original_dataframe.tail(1).copy(deep=True))
+
     # print(rename_dict, score_dict, big_num_list, big_name_list)
     sum_score_number = sum([j for i, j in big_num_list])  # 求总分
     print(f"\n总分：   {sum_score_number}  ")  # 核对总分
 
     # original_dataframe = pd.concat([original_dataframe, score_dataframe], ignore_index=True) # 合并表格
-    original_dataframe.drop(original_dataframe.tail(1).index, inplace=True)  # 删除最后一行，之前的只是另存
-    original_dataframe.rename(columns=rename_dict, inplace=True)  # 把列重命名,tiaozh
-    original_dataframe = original_dataframe[['姓名', '班级', '总分'] + list(rename_dict.values())]  # 去掉无用列,tiaozh
+    original_dataframe.drop(original_dataframe.tail(
+        1).index, inplace=True)  # 删除最后一行，之前的只是另存
+    original_dataframe.rename(
+        columns=rename_dict, inplace=True)  # 把列重命名,tiaozh
+    original_dataframe = original_dataframe[[
+                                                '姓名', '班级', '总分'] + list(rename_dict.values())]  # 去掉无用列,tiaozh
     print('整理后的dataframe：\n')
     # print(original_dataframe)
 
@@ -248,18 +302,21 @@ def chuli(filename_str_chuli):
     2.生成汇总表；
     3.数据分析
     """
-    original_dataframe["合计"] = original_dataframe["总分"].astype('float') - sum_score_number  # 处理扣总分
+    original_dataframe["合计"] = original_dataframe["总分"].astype(
+        'float') - sum_score_number  # 处理扣总分
     """复制到分析表"""
     analyze_dataframe = original_dataframe.copy(deep=True)
     """复制到分析表"""
     del original_dataframe['总分']  # 删除总分列
 
     for j in score_dict:  # 变成负分.astype('float')
-    
-        original_dataframe[j] = original_dataframe[j].astype('float') - score_dict.get(j)
+
+        original_dataframe[j] = original_dataframe[j].astype(
+            'float') - score_dict.get(j)
         original_dataframe[j] = original_dataframe[j].replace(0, np.nan)
 
-    original_dataframe = original_dataframe.groupby(['班级'])  # 按照班级分类,分类并不重建索引，沿用没分类之前的索引
+    original_dataframe = original_dataframe.groupby(
+        ['班级'])  # 按照班级分类,分类并不重建索引，沿用没分类之前的索引
     # print(original_dataframe)
     summary_list = []
     for key, value in original_dataframe:
@@ -278,7 +335,8 @@ def chuli(filename_str_chuli):
         """1.负分表保存文件"""
         save_file(key, value)
 
-    summary_dataframe = pd.concat(summary_list, ignore_index=True)  # 合并dataframe
+    summary_dataframe = pd.concat(
+        summary_list, ignore_index=True)  # 合并dataframe
     headline_list = summary_dataframe.columns.values.tolist()  # 把列名转换成 list 格式
     headline_list = headline_list[2:-1]  # 删除前面和后面的列名
     headline_new_list = []
@@ -300,12 +358,14 @@ def chuli(filename_str_chuli):
     print('汇总题号：\n')
     for bignumber_key, bignumber_value in big_name_list:  # 返回值来自于tiaozh
         # print(bignumber_key, bignumber_value)
-        analyze_dataframe[bignumber_key] = analyze_dataframe[bignumber_value].sum(axis=1)  # 根据列名求和,来自于tiaozh
+        analyze_dataframe[bignumber_key] = analyze_dataframe[bignumber_value].sum(
+            axis=1)  # 根据列名求和,来自于tiaozh
         big_keep_list.append(bignumber_key)
 
-    analyze_dataframe = analyze_dataframe[['班级', '总分'] + big_keep_list]  # 去掉无用列
+    analyze_dataframe = analyze_dataframe[[
+                                              '班级', '总分'] + big_keep_list]  # 去掉无用列
 
-    # analyze_1_dataframe = analyze_dataframe.copy(deep=True)  
+    # analyze_1_dataframe = analyze_dataframe.copy(deep=True)
     analyze_list = [['全年级', analyze_dataframe.copy(deep=True)]]  # 复制数据表
 
     analyze_dataframe = analyze_dataframe.groupby(['班级'])  # 按照班级分类
@@ -322,29 +382,38 @@ def chuli(filename_str_chuli):
         series_1['人数'] = total_people
         series_1['总分'] = sum_score_number
         series_1['平均分'] = round(value["总分"].mean(), 1)
-        series_1['及格人数'] = value[value["总分"] > sum_score_number * 0.59].count()["总分"]
+        series_1['及格人数'] = value[value["总分"] >
+                                 sum_score_number * 0.59].count()["总分"]
         series_1['及格率'] = round(series_1['及格人数'] / total_people * 100, 1)
-        series_1['优秀人数'] = value[value["总分"] > sum_score_number * 0.84].count()["总分"]
+        series_1['优秀人数'] = value[value["总分"] >
+                                 sum_score_number * 0.84].count()["总分"]
         series_1['优秀率'] = round(series_1['优秀人数'] / total_people * 100, 1)
-        series_1['过差人数'] = value[value["总分"] < sum_score_number * 0.40].count()["总分"]
+        series_1['过差人数'] = value[value["总分"] <
+                                 sum_score_number * 0.40].count()["总分"]
         series_1['过差率'] = round(series_1['过差人数'] / total_people * 100, 1)
-        class_summary_dataframe = class_summary_dataframe.append(series_1, ignore_index=True)
+        class_summary_dataframe = class_summary_dataframe.append(
+            series_1, ignore_index=True)
 
         for problem_num, score_num in big_num_list:
             series_2 = pd.Series(key, ['班级'])
             series_2['题号'] = problem_num
             series_2['本题满分'] = score_num
-            series_2['满分人数'] = value[value[problem_num] > score_num * 0.997].count()[problem_num]
+            series_2['满分人数'] = value[value[problem_num]
+                                     > score_num * 0.997].count()[problem_num]
             series_2['满分率'] = round(series_2['满分人数'] / total_people * 100, 1)
-            series_2['及格人数'] = value[value[problem_num] > score_num * 0.597].count()[problem_num]
+            series_2['及格人数'] = value[value[problem_num]
+                                     > score_num * 0.597].count()[problem_num]
             series_2['及格率'] = round(series_2['及格人数'] / total_people * 100, 1)
-            series_2['0分人数'] = value[value[problem_num] == 0].count()[problem_num]
+            series_2['0分人数'] = value[value[problem_num] == 0].count()[
+                problem_num]
             series_2['0分率'] = round(series_2['0分人数'] / total_people * 100, 1)
             series_2['本题平均分'] = round(value[problem_num].mean(), 1)
-            series_2['本题得分率'] = round(value[problem_num].sum() / total_people / score_num * 100, 1)
+            series_2['本题得分率'] = round(
+                value[problem_num].sum() / total_people / score_num * 100, 1)
             series_2['最高分'] = value[problem_num].max()
             series_2['最低分'] = value[problem_num].min()
-            class_dataframe = class_dataframe.append(series_2, ignore_index=True)
+            class_dataframe = class_dataframe.append(
+                series_2, ignore_index=True)
     print('描述dataframe：\n')
     # print(f'{class_summary_dataframe}\n\n{class_dataframe}')
     save_file3(class_summary_dataframe, class_dataframe)
