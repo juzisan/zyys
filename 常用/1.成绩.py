@@ -168,13 +168,14 @@ def save_file2(filename_str, data_dataframe):
     del wb, ws
 
 
-def save_file3(*data_list):
+def save_file3(data_1, data_2):
     wb = Workbook()  # 创建workbook实例
     ws = wb.active
-
-    for data_df in data_list:
-        for row in dataframe_to_rows(data_df, index=True, header=True):
-            ws.append(row)
+    # dataframe转行
+    for row in dataframe_to_rows(data_1, index=True, header=True):
+        ws.append(row)
+    for row in dataframe_to_rows(data_2, index=True, header=True):
+        ws.append(row)
     rows_num = ws.max_row
 
     for i in range(1, rows_num + 1):
@@ -186,9 +187,9 @@ def save_file3(*data_list):
     os.startfile('描述.xlsx')
     del wb, ws
 
-    class_names_set = data_list[0]['班级'].unique()
-    table_1_df = data_list[0].groupby(['班级'])
-    table_2_df = data_list[1].groupby(['班级'])
+    class_names_set = data_1['班级'].unique()  # 班级的set
+    table_1_df = data_1.groupby(['班级'])
+    table_2_df = data_2.groupby(['班级'])
     print(class_names_set)
     dir_str = os.getcwd()  # 本地目录
     src_file = os.path.join(dir_str, '试卷分析模板.doc')
@@ -292,7 +293,7 @@ def chuli(filename_str_chuli):
     original_dataframe.rename(
         columns=rename_dict, inplace=True)  # 把列重命名,tiaozh
     original_dataframe = original_dataframe[[
-                                                '姓名', '班级', '总分'] + list(rename_dict.values())]  # 去掉无用列,tiaozh
+        '姓名', '班级', '总分'] + list(rename_dict.values())]  # 去掉无用列,tiaozh
     print('整理后的dataframe：\n')
     # print(original_dataframe)
 
@@ -363,7 +364,7 @@ def chuli(filename_str_chuli):
         big_keep_list.append(bignumber_key)
 
     analyze_dataframe = analyze_dataframe[[
-                                              '班级', '总分'] + big_keep_list]  # 去掉无用列
+        '班级', '总分'] + big_keep_list]  # 去掉无用列
 
     # analyze_1_dataframe = analyze_dataframe.copy(deep=True)
     analyze_list = [['全年级', analyze_dataframe.copy(deep=True)]]  # 复制数据表
@@ -393,6 +394,8 @@ def chuli(filename_str_chuli):
         series_1['过差率'] = round(series_1['过差人数'] / total_people * 100, 1)
         class_summary_dataframe = class_summary_dataframe.append(
             series_1, ignore_index=True)
+        class_summary_dataframe = class_summary_dataframe.astype(
+            {'人数': 'int', '总分': 'int', '及格人数': 'int', '过差人数': 'int'})  # 把数据类型改成整数，不然是浮点数
 
         for problem_num, score_num in big_num_list:
             series_2 = pd.Series(key, ['班级'])
@@ -414,6 +417,8 @@ def chuli(filename_str_chuli):
             series_2['最低分'] = value[problem_num].min()
             class_dataframe = class_dataframe.append(
                 series_2, ignore_index=True)
+            class_dataframe = class_dataframe.astype(
+                {'本题满分': 'int', '满分人数': 'int', '及格人数': 'int', '0分人数': 'int'})  # 把数据类型改成整数，不然是浮点数
     print('描述dataframe：\n')
     # print(f'{class_summary_dataframe}\n\n{class_dataframe}')
     save_file3(class_summary_dataframe, class_dataframe)
