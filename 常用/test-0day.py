@@ -5,3 +5,4 @@ for i in p2:
         print(i, 'meizhaodao')
     else:
         print(i, 'zhaodao')
+print(f'{p2 = }')
