@@ -43,6 +43,8 @@ from win32com.client import Dispatch
 
 locale.setlocale(locale.LC_COLLATE, 'zh_CN.UTF8')  # 设置本地语言比较习惯为中文
 
+p_title = ''
+
 
 def timer(func):
     """ 计时器. """
@@ -100,8 +102,7 @@ def save_file(filename_str, data_dataframe):
     ws.insert_rows(1)  # 插入标题行
     ws.merge_cells(start_row=1, start_column=1, end_row=1,
                    end_column=ws.max_column)  # 合并标题行
-    p_title = filename_str
-    ws['A1'] = p_title
+    ws['A1'] = filename_str
     ws['A1'].alignment = Alignment(horizontal='center')  # 设置标题居中
     ws['A1'].font = Font(size=20)  # 设置字号大小
 
@@ -159,8 +160,7 @@ def save_file2(filename_str, data_dataframe):
     ws['A3'] = ws['A4'].value  # 单元格值需要value
     ws.delete_rows(4)  # 删行
     ws.merge_cells('D1:U1')
-    p_title = '数学' + filename_str  # '七年_________考试教学质量分析统计表（数学）'改成前面的了
-    ws['D1'] = p_title
+    ws['D1'] = '数学' + filename_str  # '七年_________考试教学质量分析统计表（数学）'改成前面的了
     ws['D1'].alignment = Alignment(horizontal='center')  # 设置标题居中
     ws['D1'].font = Font(size=20)  # 设置字号大小
 
@@ -170,6 +170,7 @@ def save_file2(filename_str, data_dataframe):
 
 
 def save_file3(data_1, data_2):
+    global p_title
     wb = Workbook()  # 创建workbook实例
     ws = wb.active
     # dataframe转行
@@ -273,6 +274,7 @@ def chuli(filename_str_chuli):
     """共有."""
     global p_title
     p_title = re.findall('^小分表 - ([\\w\\W]*).xlsx$', filename_str_chuli)[0]
+
     print(f'考试标题： {p_title}')
     original_dataframe = pd.read_excel(filename_str_chuli, skiprows=1, dtype={
         '班级': 'str', })  # 读 excel '总分':'int'
