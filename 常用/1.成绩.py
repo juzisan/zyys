@@ -205,6 +205,9 @@ def save_file3(data_1, data_2):
         shutil.copyfile(src_file, dst_file)  # 复制文件
         print(f'{dst_file = }')
         doc = msword.Documents.Open(dst_file)  # 打开word文件
+        doc.Paragraphs(1).Range.Find.Execute('xxx-xxx', False, False, False, False, False, True, 1, True,
+                                             name_of_class + p_title, 2)  # 第一段文本替换
+
         table_s = doc.Tables  # word文件中所有表格的集合
         num_table = doc.Tables.Count  # word文件中有几个表格，序号从1开始，不是0
         print(f'{num_table = }\n')
@@ -268,6 +271,7 @@ def tiaozh(num_dataframe):
 
 def chuli(filename_str_chuli):
     """共有."""
+    global p_title
     p_title = re.findall('^小分表 - ([\\w\\W]*).xlsx$', filename_str_chuli)[0]
     print(f'考试标题： {p_title}')
     original_dataframe = pd.read_excel(filename_str_chuli, skiprows=1, dtype={
