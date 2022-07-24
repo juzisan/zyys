@@ -1,6 +1,6 @@
 """Created on Sat Oct 19 19:52:49 2019.
 
-@author: Mrlily
+@author: Mr lily
 整理爸爸的试卷分析
 如果题号有错误，命名方式为    【客 | 一.1】
 如果错误太多，再想办法重命名题号
@@ -36,7 +36,7 @@ import time
 import numpy as np
 import pandas as pd
 from openpyxl import Workbook
-from openpyxl.styles import Alignment, Border, Side, Font
+from openpyxl.styles import Alignment, Border, Font, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.utils.dataframe import dataframe_to_rows
 from win32com.client import Dispatch
@@ -194,7 +194,7 @@ def save_file3(data_1, data_2):
     table_2_df = data_2.groupby(['班级'])
     print(class_names_set)
     dir_str = os.getcwd()  # 本地目录
-    src_file = os.path.join(dir_str, '试卷分析模板.doc')
+    src_file = os.path.join(dir_str, '模板.doc')
 
     msword = Dispatch('Word.Application')  # 打开微软word程序，后面得关闭
     msword.Visible = 1  # 显示word窗口
@@ -235,7 +235,7 @@ def save_file3(data_1, data_2):
     msword.Quit()  # 手动关闭word程序
 
 
-def tiaozh(num_df):
+def convert_df(num_df):
     """."""
     num_df = num_df.dropna(axis=1, how='all')  # 最后一行，有数据的是每题分值
     num_df = num_df.T  # 行转列
@@ -272,7 +272,7 @@ def tiaozh(num_df):
     return rename_dict, score_dict, big_num_list, big_name_list
 
 
-def chuli(file_str):
+def do_it(file_str):
     """共有."""
     global p_title
     p_title = re.findall('^小分表 - ([\\w\\W]*).xlsx$', file_str)[0]
@@ -282,7 +282,7 @@ def chuli(file_str):
     original_df = original_df.sort_values(by=['总分'], ascending=False)
     original_df.index = range(1, len(original_df) + 1)  # 重建索引 从1开始
 
-    rename_dict, score_dict, big_num_list, big_name_list = tiaozh(
+    rename_dict, score_dict, big_num_list, big_name_list = convert_df(
         original_df.tail(1).copy(deep=True))
 
     # print(rename_dict, score_dict, big_num_list, big_name_list)
@@ -293,10 +293,10 @@ def chuli(file_str):
     original_df.drop(original_df.tail(1).index, inplace=True)
     # 删除最后一行，之前的只是另存
     original_df.rename(columns=rename_dict, inplace=True)
-    # 把列重命名,tiaozh
+    # 把列重命名,convert_df
     rename_lst = ['姓名', '班级', '总分'] + list(rename_dict.values())
     original_df = original_df[rename_lst]
-    # 去掉无用列,tiaozh
+    # 去掉无用列,convert_df
     print('整理后的dataframe：\n')
     # print(original_df)
 
@@ -358,11 +358,11 @@ def chuli(file_str):
     '''总人数count()后面不用[]，有筛选的就要用[]了'''
     big_keep_list = []
     print('汇总题号：\n')
-    for b_key, b_value in big_name_list:  # 返回值来自于tiaozh
+    for b_key, b_value in big_name_list:  # 返回值来自于convert
         # print(b_key, b_value)
         analyze_df[b_key] = analyze_df[b_value].sum(
             axis=1)
-        # 根据列名求和,来自于tiaozh
+        # 根据列名求和,来自于convert
         big_keep_list.append(b_key)
 
     analyze_df = analyze_df[['班级', '总分'] + big_keep_list]  # 去掉无用列
@@ -448,9 +448,9 @@ def main():
             for i, value in enumerate(names):
                 print(i, '代表：  ', value)
             select_num = int(input("输入转换的序号："))
-            chuli(names[select_num])
+            do_it(names[select_num])
         else:
-            chuli(names[0])
+            do_it(names[0])
     else:
         print('缺少文件')
 
