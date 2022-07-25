@@ -33,9 +33,9 @@ def do_it(file_n):
     msword = Dispatch('Word.Application')  # 打开微软word程序，后面得关闭
     msword.Visible = 1  # 显示word窗口
     doc = msword.Documents.Open(dst_file)  # 打开word文件
-    para_all = doc.Paragraphs
-    for p_key, p_value in enumerate(para_all):
-        print(p_key + 1, p_value.Range.text)
+    replace_t = ('xxx-xxx', False, False, False, False, False, True, 1, True, 'name_of_class + p_title', 2)
+    msword.Selection.Find.Execute(*replace_t)
+    # 教程不明确，替换是在应用里替换，所以前面用的是msword，而不是文档doc。
     doc.Save()
     doc.Close()  # 保存并退出
     msword.Quit()  # 手动关闭word程序
@@ -45,7 +45,7 @@ def do_it(file_n):
 def main():
     """程序开始."""
     names = os.listdir(os.path.split(os.path.realpath(__file__))[0])
-    names = [i for i in names if re.match('(.*?)\.(doc|docx)$', i)]
+    names = [i for i in names if re.match(r'(.*?)\.(doc|docx)$', i)]
     if names:
         if len(names) > 1:
             print('请输入序号：')

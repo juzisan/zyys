@@ -206,10 +206,9 @@ def save_file3(data_1, data_2):
         shutil.copyfile(src_file, dst_file)  # 复制文件
         print(f'{dst_file = }')
         doc = msword.Documents.Open(dst_file)  # 打开word文件
-        p1 = doc.Paragraphs(1)
         replace_t = ('xxx-xxx', False, False, False, False, False, True, 1, True, name_of_class + p_title, 2)
-        p1.Range.Find.Execute(*replace_t)
-        # 第一段文本替换，参数用*解包
+        msword.Selection.Find.Execute(*replace_t)
+        # 第一段文本替换，参数用*解包，替换是在应用里替换，而不是doc
         table_s = doc.Tables  # word文件中所有表格的集合
         num_table = doc.Tables.Count  # word文件中有几个表格，序号从1开始，不是0
         print(f'{num_table = }\n')
