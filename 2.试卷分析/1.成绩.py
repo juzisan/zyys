@@ -431,11 +431,6 @@ def do_it(file_str):
     print('OK')
 
 
-# 数据区
-
-
-# 数据区
-
 @timer
 def main():
     """程序开始."""
