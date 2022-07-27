@@ -1,10 +1,13 @@
 ### 特殊注意
 
 ######
+
 word替换使用的是程序Application，不是文档Documents
 
 ---
+
 ### 替换word文件中的内容：
+
 ```python
 from win32com.client import Dispatch
 
@@ -42,13 +45,25 @@ msword.Quit()
 7. 保存文档
 8. 关闭文档
 9. 关闭程序
----
-### 替换word文件中的内容：
-```python
-import pandas as pd
-df = pd.read_excel(io='file_str', sheet_name=0, dtype={'班级': 'str'}, skiprows=1)
-```
-#####
-read_excel必须要有sheet_name参数，0为第一个，None为所有都读取，读到一个字典里
 
 ---
+
+### 替换word文件中的内容：
+
+```python
+import pandas as pd
+
+df = pd.read_excel(io='file_str', sheet_name=0, dtype={'班级': 'str'}, skiprows=1)
+```
+
+#####
+
+read_excel 必须要有 sheet_name 参数，0为第一个，None 为所有都读取，读到一个字典里
+
+---
+
+### 增加 word 替换文本函数 r_str
+
+####
+
+执行的时候用 * 号解包

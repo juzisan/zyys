@@ -21,6 +21,11 @@ def timer(func):
     return warpper
 
 
+def r_str(old_str, new_str):
+    """返回替换用的元组."""
+    return old_str, False, False, False, False, False, True, 1, True, new_str, 2
+
+
 def do_it(file_n):
     dir_str = os.getcwd()  # 本地目录
     src_file = os.path.join(dir_str, file_n)
@@ -33,8 +38,7 @@ def do_it(file_n):
     msword = Dispatch('Word.Application')  # 打开微软word程序，后面得关闭
     msword.Visible = 1  # 显示word窗口
     doc = msword.Documents.Open(dst_file)  # 打开word文件
-    replace_t = ('xxx-xxx', False, False, False, False, False, True, 1, True, 'name_of_class + p_title', 2)
-    msword.Selection.Find.Execute(*replace_t)
+    msword.Selection.Find.Execute(*r_str('【》《】', 'name_of_class + p_title'))
     # 教程不明确，替换是在应用里替换，所以前面用的是msword，而不是文档doc。
     doc.Save()
     doc.Close()  # 保存并退出
