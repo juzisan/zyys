@@ -48,26 +48,30 @@ def do_it(file_str):
     print(f'{tj_exam_set =}')
     tj_df['加号'] = tj_df['检查部位'].str.count(r'\+')
     print(tj_df)
-    print(tj_df['加号'].sum(), tj_df['加号'].count())
     tj_sum = tj_df['加号'].sum() + tj_df['加号'].count()
+    show_dict['体检'] = tj_sum
     print(f'{tj_sum  = }\n\n')
 
     mz_df = ori_df[ori_df['患者类型'] != '体检'].copy(deep=True)
     mz_df.index = range(1, len(mz_df) + 1)  # 重建索引
+    mz_df['检查部位'].replace(r"\[|\]", '', regex=True, inplace=True)
     show_dict['报告数'] = mz_df.count()['报告医生']
-    count_lst = [r'三维', r'双胎', r'残余尿', r'经阴道', r'二维']
 
-    for i in count_lst:
-        if i == r'二维':
-            r_str = ''
-        else:
-            r_str = i
-        mz_df[i] = mz_df['检查部位'].str.contains(r_str, na=False, regex=False)
-        mz_df[i] = mz_df[i].astype('int')
-        show_dict[i] = mz_df[i].sum()
-
-    mz_exam_set = mz_df['检查部位'].unique()
+    count_dict = {r'三维': r'三维', r'双胎': r'双胎', r'残余尿': r'残余尿',
+                  r'55残余尿': r'^膀胱残余尿测定', r'经阴道': r'经阴道(?:.*)二维'}
+    for key, value in count_dict.items():
+        mz_df[key] = mz_df['检查部位'].str.contains(value, na=False, regex=True)
+        mz_df[key] = mz_df[key].astype('int')
+        show_dict[key] = mz_df[key].sum()
     print(mz_df)
+    mz_df['二维'] = 1 - mz_df['三维']
+    mz_df['二维'] = mz_df['二维'] - mz_df['经阴道']
+    mz_df['二维'] = mz_df['二维'] - mz_df['55残余尿']
+    print(mz_df[mz_df['二维'] < 0])
+    # mz_df.loc[mz_df['二维'] < 0, '二维'] = 0
+    show_dict['二维'] = mz_df['二维'].sum()
+    mz_exam_set = mz_df['检查部位'].unique()
+
     print(f'{mz_exam_set  = }\n\n')
     print(f'{show_dict = }')
 
