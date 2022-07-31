@@ -70,7 +70,8 @@ def do_it(file_str):
     print(mz_df[mz_df['二维'] < 0])
     # mz_df.loc[mz_df['二维'] < 0, '二维'] = 0
     show_dict['二维'] = mz_df['二维'].sum()
-    mz_exam_set = mz_df['检查部位'].unique()
+    mz_exam_set = list(mz_df['检查部位'].unique())
+    mz_exam_set.sort()
 
     print(f'{mz_exam_set  = }\n\n')
     print(f'{show_dict = }')
