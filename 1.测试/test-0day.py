@@ -16,5 +16,10 @@ d_2 = (d_2 * 100).round(0)
 print(d_2)
 d_2.loc[d_2['ab'] < 60, 'ab'] = '不及格'
 print(d_2)
+s_1 = pd.Series(dtype=int, name='张三')
+s_1['ti'] = 3
+s_1['zy'] = 9
+print(f'{s_1 = }')
+
 '''
 '''
