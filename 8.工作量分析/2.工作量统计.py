@@ -1,4 +1,4 @@
-"""Created on Fri Jul  8 17:24:40 2022
+"""Created on Fri Jul  8 17:24:40 2022.
 
 @author: Mrlily
 统计工作量
@@ -15,7 +15,7 @@ import pandas as pd
 
 
 def timer(func):
-    """ 计时器. """
+    """计时器."""
 
     def warpper():
         """计时器内部."""
@@ -58,6 +58,7 @@ def one_do(p_name, p_df):
     mz_df['二维'] = 1 - mz_df['三维']
     mz_df['二维'] = mz_df['二维'] - mz_df['经阴道']
     mz_df['二维'] = mz_df['二维'] - mz_df['55残余尿']
+    del show_s['55残余尿']
     if not mz_df[mz_df['二维'] < 0].empty:
         print('有错')
     # mz_df.loc[mz_df['二维'] < 0, '二维'] = 0
@@ -83,9 +84,8 @@ def do_it(file_str):
     all_name = ['程日', '董宝玲', '洪森', '姜纯莲', '李双生', '李晓莹', '刘海燕', '刘思阳',
                 '刘涛', '刘炜', '马延梁', '孟凡伟', '史嘉琳', '孙承飞', '汪亚新',
                 '王漠璇', '王桐', '信吉伟', '邢卫军', '赵希平', '周晓丽', '朱凯', ]
-    a_list = []
-    for i_name in all_name:
-        a_list.append(one_do(i_name, ori_df[ori_df['报告医生'] == i_name]))
+
+    a_list = [one_do(i, ori_df[ori_df['报告医生'] == i]) for i in all_name]
     d_df = pd.concat(a_list, axis=1).T
     print(d_df)
 

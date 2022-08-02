@@ -108,3 +108,4 @@ shuju.py
 .idea
 *.xls
 /8.工作量分析/t.py
+/8.工作量分析/*.xlsx
