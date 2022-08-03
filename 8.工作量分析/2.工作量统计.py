@@ -48,15 +48,15 @@ def one_do(p_name, p_df):
     mz_df['检查部位'].replace(r"\[|\]", '', regex=True, inplace=True)
     show_s['报告数'] = mz_df.count()['报告医生']
 
-    count_dict = {r'三维': r'三维', r'双胎': r'双胎', r'残余尿': r'残余尿',
-                  r'55残余尿': r'^膀胱残余尿测定', r'经阴道': r'经阴道(?:.*)二维'}
+    count_dict = {r'腔内132': r'经阴道(?:.*)二维', r'双胎55': r'双胎', r'三维264': r'三维', r'残余尿': r'残余尿',
+                  r'55残余尿': r'^膀胱残余尿测定'}
     for key, value in count_dict.items():
         mz_df[key] = mz_df['检查部位'].str.contains(value, na=False, regex=True)
         mz_df[key] = mz_df[key].astype('int')
         show_s[key] = mz_df[key].sum()
     # print(mz_df)
-    mz_df['二维'] = 1 - mz_df['三维']
-    mz_df['二维'] = mz_df['二维'] - mz_df['经阴道']
+    mz_df['二维'] = 1 - mz_df['三维264']
+    mz_df['二维'] = mz_df['二维'] - mz_df['腔内132']
     mz_df['二维'] = mz_df['二维'] - mz_df['55残余尿']
     del show_s['55残余尿']
     if not mz_df[mz_df['二维'] < 0].empty:
@@ -87,7 +87,9 @@ def do_it(file_str):
 
     a_list = [one_do(i, ori_df[ori_df['报告医生'] == i]) for i in all_name]
     d_df = pd.concat(a_list, axis=1).T
+    d_df.set_index('报告医生', inplace=True)
     print(d_df)
+    d_df.to_excel(str(yue)+'统计.xlsx')
 
 
 @timer
