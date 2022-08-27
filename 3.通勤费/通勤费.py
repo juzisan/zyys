@@ -8,6 +8,7 @@ This is a temporary script file.
 1. 数据.xls
 2. add.png
 3. 安装  pip install opencv-contrib-python
+4. pip install ddddocr
 """
 import time
 import pandas as pd
