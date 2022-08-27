@@ -10,51 +10,80 @@ This is a temporary script file.
 3. 安装  pip install opencv-contrib-python
 """
 import time
-
 import pandas as pd
 import pyautogui
 import pyperclip3
+import ddddocr
 
-print('屏幕大小：', pyautogui.size())
-print('鼠标位置：', pyautogui.position())
+ocr = ddddocr.DdddOcr(old=False)
 
-'''载入人员数据'''
-pd_tqf = pd.read_excel('数据.xls', index_col=0, sheet_name='通勤费', dtype={'人员编码': str, '金额': str})
-# pd_tqf = pd_tqf[:3]
 
-gao_xz = 0  # edge修正为0，chrome修正为45
-'''加号的位置'''
-x1, y1 = pyautogui.locateCenterOnScreen('add.png', confidence=0.5)
-print('加号位置：', x1, y1)
-y2 = y1 - 150
+def det(x):
+    image = pyautogui.screenshot(region=x)
+    res = ocr.classification(image)
+    print(res)
+    return res
 
-'''点击加号的位置'''
-pyautogui.click(x1, y1)
 
-'''等1s后'''
-time.sleep(1)
-
-'''开始循环'''
-for row in pd_tqf.itertuples():
-    time.sleep(0.3)
-    pyautogui.click(950, 600 + gao_xz)
-    pyautogui.press('tab')
-    print(getattr(row, '姓名'))
-    '''点击人员编码的位置'''
-
-    pyautogui.write(getattr(row, '人员编码'))
-
-    pyautogui.click(x1, y2 + gao_xz)
-    '''点击姓名的位置'''
-    po_xm = (1285, 600 + gao_xz)  # 姓名959,570 + gao_xz
-    pyautogui.click(po_xm)
+def main():
+    gao_xz = 0  # edge修正为0，chrome修正为45
+    '''加号的位置'''
+    print('屏幕大小：', pyautogui.size())
+    print('鼠标位置：', pyautogui.position())
+    pyautogui.click(350, 430 + gao_xz)  # 输入工资编号
+    pyautogui.write('2046')
     time.sleep(0.5)
+    pyautogui.click(350, 200 + gao_xz)  # 点击空白
+    time.sleep(0.5)
+    pyautogui.click(350, 500 + gao_xz)  # 输入密码
+    pyautogui.write('chenG2046')
+    time.sleep(0.5)
+    pyautogui.click(350, 200 + gao_xz)  # 点击空白
+    pyautogui.click(350, 570 + gao_xz)  # 输入验证码
+    image_yzm = (400, 550, 120, 50)
+    pyautogui.write(det(image_yzm))  # 识别验证码并输入
+    time.sleep(0.5)
+    pyautogui.click(350, 200 + gao_xz)  # 点击空白
+    pyautogui.click(430, 670 + gao_xz)  # 点击登陆
+    time.sleep(4)
+    pyautogui.click(490, 160 + gao_xz)  # 协同办公
+    time.sleep(3)
+    pyautogui.click(80, 940 + gao_xz)  # 综合保障部
+    time.sleep(1)
+    pyautogui.click(90, 760 + gao_xz)  # 通勤费补助
+    time.sleep(1)
+    pyautogui.click(90, 810 + gao_xz)  # 通勤费补助明细
+    time.sleep(3)
 
-    pyautogui.press('tab')
-    pyperclip3.copy(getattr(row, '家庭住址'))  # copy data to the clipboard
-    pyautogui.hotkey('ctrl', 'v')  # retrieve clipboard contents
-    time.sleep(0.3)
-    pyautogui.press('tab')
-    pyautogui.write(getattr(row, '金额'))
+    '''载入人员数据'''
+    pd_tqf = pd.read_excel('数据.xls', index_col=0, sheet_name='通勤费', dtype={'人员编码': str, '金额': str})
+    # pd_tqf = pd_tqf[:3]
+    # x1, y1 = pyautogui.locateCenterOnScreen('add.png', confidence=0.5)
 
-print('well done, OK')
+    pyautogui.click(1820, 550)  # 点击加号
+
+    time.sleep(1)
+
+    '''开始循环'''
+    for row in pd_tqf.itertuples():
+        time.sleep(0.3)
+        pyautogui.click(950, 600 + gao_xz)  # 点击序号
+        pyautogui.press('tab')
+        print(getattr(row, '姓名'), getattr(row, '人员编码'))
+        pyautogui.write(getattr(row, '人员编码'))
+        time.sleep(0.5)
+        pyautogui.click(1280, 300 + gao_xz)  # 点击空白
+        pyautogui.click(1280, 600 + gao_xz)  # 点击请输入姓名
+        time.sleep(0.5)
+        pyautogui.click(1500, 650 + gao_xz)  # 点击请输入家庭住址
+        # pyautogui.press('tab')
+        pyperclip3.copy(getattr(row, '家庭住址'))  # copy data to the clipboard
+        pyautogui.hotkey('ctrl', 'v')  # retrieve clipboard contents
+        time.sleep(0.3)
+        pyautogui.press('tab')
+        pyautogui.write(getattr(row, '金额'))
+
+
+if __name__ == "__main__":
+    main()
+    print('all ok')
