@@ -5,7 +5,7 @@ Spyder Editor
 This is a temporary script file.
 
 需要
-1. 数据.xls
+1. 数据.xlsx
 2. add.png
 3. 安装  pip install opencv-contrib-python
 4. pip install ddddocr

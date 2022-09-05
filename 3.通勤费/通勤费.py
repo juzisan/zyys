@@ -5,10 +5,10 @@ Spyder Editor
 This is a temporary script file.
 
 需要
-1. 数据.xls
+1. 数据.xlsx
 2. add.png
 3. 安装  pip install opencv-contrib-python
-4. pip install ddddocr
+4. pip install dddd-ocr
 """
 import time
 import pandas as pd
@@ -57,7 +57,7 @@ def main():
     time.sleep(3)
 
     '''载入人员数据'''
-    pd_tqf = pd.read_excel('数据.xls', index_col=0, sheet_name='通勤费', dtype={'人员编码': str, '金额': str})
+    pd_tqf = pd.read_excel('数据.xlsx', index_col=0, sheet_name='通勤费', dtype={'人员编码': str, '金额': str})
     # pd_tqf = pd_tqf[:3]
     # x1, y1 = pyautogui.locateCenterOnScreen('add.png', confidence=0.5)
 
@@ -71,13 +71,13 @@ def main():
         pyautogui.click(950, 600 + gao_xz)  # 点击序号
         pyautogui.press('tab')
         print(getattr(row, '姓名'), getattr(row, '人员编码'))
-        pyautogui.write(getattr(row, '人员编码'))
+        pyperclip3.copy(getattr(row, '人员编码'))  # write在ZP时出错
+        pyautogui.hotkey('ctrl', 'v')
         time.sleep(0.5)
         pyautogui.click(1280, 300 + gao_xz)  # 点击空白
         pyautogui.click(1280, 600 + gao_xz)  # 点击请输入姓名
         time.sleep(0.5)
         pyautogui.click(1500, 650 + gao_xz)  # 点击请输入家庭住址
-        # pyautogui.press('tab')
         pyperclip3.copy(getattr(row, '家庭住址'))  # copy data to the clipboard
         pyautogui.hotkey('ctrl', 'v')  # retrieve clipboard contents
         time.sleep(0.3)
