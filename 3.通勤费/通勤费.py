@@ -41,19 +41,19 @@ def main():
     time.sleep(0.5)
     pyautogui.click(350, 200 + gao_xz)  # 点击空白
     pyautogui.click(350, 570 + gao_xz)  # 输入验证码
-    image_yzm = (400, 550, 120, 50)
+    image_yzm = (450, 550, 140, 55)
     pyautogui.write(det(image_yzm))  # 识别验证码并输入
     time.sleep(0.5)
     pyautogui.click(350, 200 + gao_xz)  # 点击空白
     pyautogui.click(430, 670 + gao_xz)  # 点击登陆
     time.sleep(4)
-    pyautogui.click(490, 160 + gao_xz)  # 协同办公
+    pyautogui.click(550, 160 + gao_xz)  # 协同办公
     time.sleep(3)
-    pyautogui.click(80, 940 + gao_xz)  # 综合保障部
+    pyautogui.click(120, 940 + gao_xz)  # 综合保障部
     time.sleep(1)
-    pyautogui.click(90, 760 + gao_xz)  # 通勤费补助
+    pyautogui.click(120, 760 + gao_xz)  # 通勤费补助
     time.sleep(1)
-    pyautogui.click(90, 810 + gao_xz)  # 通勤费补助明细
+    pyautogui.click(120, 810 + gao_xz)  # 通勤费补助明细
     time.sleep(3)
 
     '''载入人员数据'''
@@ -61,14 +61,14 @@ def main():
     # pd_tqf = pd_tqf[:3]
     # x1, y1 = pyautogui.locateCenterOnScreen('add.png', confidence=0.5)
 
-    pyautogui.click(1820, 550)  # 点击加号
+    pyautogui.click(1850, 550)  # 点击加号
 
     time.sleep(1)
 
     '''开始循环'''
     for row in pd_tqf.itertuples():
         time.sleep(0.3)
-        pyautogui.click(950, 600 + gao_xz)  # 点击序号
+        pyautogui.click(980, 600 + gao_xz)  # 点击序号
         pyautogui.press('tab')
         print(getattr(row, '姓名'), getattr(row, '人员编码'))
         pyperclip3.copy(getattr(row, '人员编码'))  # write在ZP时出错
@@ -77,7 +77,8 @@ def main():
         pyautogui.click(1280, 300 + gao_xz)  # 点击空白
         pyautogui.click(1280, 600 + gao_xz)  # 点击请输入姓名
         time.sleep(0.5)
-        pyautogui.click(1500, 650 + gao_xz)  # 点击请输入家庭住址
+        pyautogui.click(1280, 300 + gao_xz)  # 点击空白
+        pyautogui.click(1570, 650 + gao_xz)  # 点击请输入家庭住址
         pyperclip3.copy(getattr(row, '家庭住址'))  # copy data to the clipboard
         pyautogui.hotkey('ctrl', 'v')  # retrieve clipboard contents
         time.sleep(0.3)

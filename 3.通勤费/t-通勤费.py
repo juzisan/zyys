@@ -24,7 +24,7 @@ ocr = ddddocr.DdddOcr(old=False)
 
 
 def det_login():
-    image = pyautogui.screenshot(region=(400, 550, 120, 50))
+    image = pyautogui.screenshot(region=(460, 550, 100, 50))
     res = ocr.classification(image)
     print(res)
 
@@ -35,6 +35,6 @@ def det(x):
     print(res)
 
 
-image_ren = (1050, 580, 120, 40)
+image_ren = (450, 550, 140, 55)
 det(image_ren)
 time.sleep(1)
