@@ -21,8 +21,8 @@ s_1 = pd.Series(dtype=int, name='张三')
 s_1['一'] = 3
 s_1['二'] = 9
 s_1['三'] = 7
-s_1.append([7])
+# s_1.append([7])
 print(f'{s_1 = }')
-
+print('\033[1;32;40m start \033[0m')
 '''
 '''

@@ -51,12 +51,12 @@ def timer(func):
 
     def warpper():
         """计时器内部."""
-        print('\033[1;32;40mstart\033[0m')
+        print('\033[1;32;40m start \033[0m')
         time1 = time.time()
         func()
         seconds = time.time() - time1
         m, s = divmod(seconds, 60)
-        print("\033[1;32;40mthe run time is %02d:%.6f\033[0m" % (m, s))
+        print("\033[1;32;40m the run time is %02d:%.6f\033[0m" % (m, s))
 
     return warpper
 
@@ -259,16 +259,16 @@ def convert_df(num_df):
         print('题号无错误')
 
     # num_df['题号'] = num_df['大题'] + '.' + num_df['小题']
-    big_set = num_df['大题'].unique()
+    big_set = num_df['小题'].unique()  # 大题
     rename_dict = num_df.set_index(['题号备份'])["题号"].to_dict()
     score_dict = num_df.set_index(['题号'])["满分值"].to_dict()
     big_num_list = []
     big_name_list = []
     for i in big_set:
         big_num_list.append(
-            [i, num_df[num_df['大题'] == i].sum()['满分值']])
+            [i, num_df[num_df['小题'] == i].sum()['满分值']])  # 大题
         big_name_list.append(
-            [i, num_df['题号'][num_df['大题'] == i].tolist()])
+            [i, num_df['题号'][num_df['小题'] == i].tolist()])  # 大题
     # print(f'{num_df = }')
     # print(num_df.dtypes)
     # print(big_num_list, big_name_list, rename_dict, score_dict, sep='\n\n')
