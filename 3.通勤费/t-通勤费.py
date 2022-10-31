@@ -9,6 +9,8 @@ This is a temporary script file.
 2. add.png
 3. 安装  pip install opencv-contrib-python
 4. pip install ddddocr
+5. pip install pyautogui
+6. pip install pyperclip3
 """
 import time
 import pandas as pd
@@ -38,3 +40,4 @@ def det(x):
 image_ren = (450, 550, 140, 55)
 det(image_ren)
 time.sleep(1)
+print('结束了')
