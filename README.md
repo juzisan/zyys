@@ -11,7 +11,7 @@ pip install tushare --upgrade
 import 列表
 ```
 pip install openpyxl
-pip install win32com
+pip install pywin32
 pip install opencv-contrib-python
 pip install ddddocr
 pip install pyautogui
