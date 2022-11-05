@@ -8,7 +8,17 @@ pip install -U pip
 pip install tushare
 pip install tushare --upgrade
 ```
+import 列表
+```
+pip install openpyxl
+pip install win32com
+pip install opencv-contrib-python
+pip install ddddocr
+pip install pyautogui
+pip install pyperclip3
+pip install requests_html
 
+```
 ---
 # - python安装
 
