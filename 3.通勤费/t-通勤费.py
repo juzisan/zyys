@@ -17,6 +17,9 @@ import pandas as pd
 import pyautogui
 import pyperclip3
 import ddddocr
+import pytesseract as tocr
+
+
 
 
 print('屏幕大小：', pyautogui.size())
@@ -40,4 +43,16 @@ def det(x):
 image_ren = (450, 550, 140, 55)
 det(image_ren)
 time.sleep(1)
+
+# 截图整个屏幕
+pyautogui.screenshot('screenshot.jpg')
+screenshot = pyautogui.screenshot()
+
+
+text = tocr.image_to_string(screenshot, lang='chi_sim')
+aa = tocr.image_to_boxes(screenshot, lang='chi_sim')
+print(text)
+print(aa)
+
+
 print('结束了')
