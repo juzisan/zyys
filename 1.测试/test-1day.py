@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import httpx
-
+import re
 
 
 '''
@@ -24,6 +24,23 @@ jishu['二维'] = 1
 jishu.rename('rank',inplace=True)
 print(jishu)
 
-aa = "[彩超（肝胆脾胰+子宫附件+乳腺）]"
+aa = "[膀胱残余尿测定彩超,二维]"
 print(aa)
-print(aa.count(r'+') + 1)
+
+
+if re.match(r'^\[膀胱残余尿(.*?)$', aa):
+    print('正确')
+else:
+    print('错误')
+
+ab = ['三维', '三维经阴道','经阴道三维','床旁','经阴道二维']
+
+for i in ab:
+    if i.count('三维'):
+        print(i,'三维彩超')
+    elif i.count('经阴道'):
+        print(i,'经阴道彩超')
+    elif i.count('床旁'):
+        print(i,'床旁加收')
+    else:
+        print('wrong')
