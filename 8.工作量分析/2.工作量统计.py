@@ -15,11 +15,14 @@ import pandas as pd
 global yue, canyn
 
 canyn=[] #统计残余尿项目名称
-col_n = ['体检例数', '腔内超声检查', '图文报告', '超声检查正常(包括双胎)', '双胎加收',
+
+def k_s():
+    """为了生成Series."""
+    col_n = ['体检例数', '腔内超声检查', '图文报告', '超声检查正常(包括双胎)', '双胎加收',
              '脏器灰阶立体成象', "超声检查(胎儿系统)", "胎儿心脏超声", '残余尿测定',
              "介入操作", "床旁彩超加收", 'B超常规检', "脏器声学造影", '临床操作超声引导', '弹性成像']
-k_s = pd.Series(name='空白', dtype=float, data=None, index=col_n)
-# 为了生成Series
+    return pd.Series(name='空白', dtype='int', data=None, index=col_n)
+
 
 def timer(func):
     """计时器."""
@@ -36,7 +39,7 @@ def timer(func):
 
 
 def one_do(neir_str, leix_type):
-    jishu = k_s.copy(deep=True) # 复制Series
+    jishu = k_s() # 复制Series
     if leix_type == '门住':
         #图文报告
         jishu['图文报告'] = 1
@@ -93,10 +96,11 @@ def do_it(file_str):
         try:
             jisruan = fenzu.get_group(i).apply(lambda row :one_do(row['检查部位'],row['患者类型']),axis=1)
             # groupby 对象需要用 get_group 才能调用,df用apply传递多个参数的时候要用lambda
-            jishu = jisruan.sum()
         except:
-            jishu = k_s.copy(deep=True)
+            jishu = k_s()
             print(i,'日  没上班')
+        else:
+            jishu = jisruan.sum()
         jishu.rename(i,inplace=True) # 对 Series 重命名
         zonghe.append(jishu)
 

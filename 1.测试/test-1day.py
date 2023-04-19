@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import httpx
 import re
-
+import random
 
 '''
 '''
@@ -44,3 +44,24 @@ for i in ab:
         print(i,'床旁加收')
     else:
         print('wrong')
+
+
+
+
+
+
+def funnn():
+    aaaa = [random.randint(11, 20) for i in range(5)]
+    return aaaa
+
+a1 = funnn()
+
+a2 = funnn()
+
+def duoduo(xx):
+    gengduo = [funnn() for i in range(xx)]
+    return gengduo
+
+print(a1)
+print(a2)
+print(duoduo(6))
