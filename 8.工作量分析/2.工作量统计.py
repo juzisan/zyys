@@ -43,26 +43,32 @@ def one_do(neir_str, leix_type):
     if leix_type == '门住':
         #图文报告
         jishu['图文报告'] = 1
-        if neir_str.count(r'三维'):
+        if re.match(r'^\[(.*?),三维\]$', neir_str):
             jishu['脏器灰阶立体成象'] = 1
-        elif neir_str.count(r'经阴道'):
-            jishu['腔内超声检查'] = 1
-        elif neir_str.count(r'一个部位'):
-            jishu['超声检查正常(包括双胎)'] = 1
-        elif neir_str.count(r'二个部位'):
-            jishu['超声检查正常(包括双胎)'] = 2
-        elif neir_str.count(r'三个部位'):
-            jishu['超声检查正常(包括双胎)'] = 3
-        elif neir_str.count(r'四个部位'):
-            jishu['超声检查正常(包括双胎)'] = 4
-        elif neir_str.count(r'五个部位'):
-            jishu['超声检查正常(包括双胎)'] = 5
+        elif re.match(r'^\[(.*?),二维\]$', neir_str):
+            if neir_str.count(r'卵泡测定'):
+                jishu['超声检查正常(包括双胎)'] = 1
+            elif neir_str.count(r'经阴道'):
+                jishu['腔内超声检查'] = 1
+            elif neir_str.count(r'一个部位'):
+                jishu['超声检查正常(包括双胎)'] = 1
+                jishu['床旁彩超加收'] = 1
+            elif neir_str.count(r'二个部位'):
+                jishu['超声检查正常(包括双胎)'] = 2
+                jishu['床旁彩超加收'] = 1
+            elif neir_str.count(r'三个部位'):
+                jishu['超声检查正常(包括双胎)'] = 3
+                jishu['床旁彩超加收'] = 1
+            elif neir_str.count(r'四个部位'):
+                jishu['超声检查正常(包括双胎)'] = 4
+                jishu['床旁彩超加收'] = 1
+            elif neir_str.count(r'五个部位'):
+                jishu['超声检查正常(包括双胎)'] = 5
+                jishu['床旁彩超加收'] = 1
         else:
+            print('缺少二维三维：', neir_str)
             jishu['超声检查正常(包括双胎)'] = 1
 
-        #床旁
-        if neir_str.count(r'床旁彩超'):
-            jishu['床旁彩超加收'] = 1
 
         #残余尿
         if neir_str.count(r'残余'):
