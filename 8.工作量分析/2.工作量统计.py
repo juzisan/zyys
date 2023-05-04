@@ -19,8 +19,8 @@ canyn=[] #统计残余尿项目名称
 def k_s():
     """为了生成Series."""
     col_n = ['体检例数', '腔内超声检查', '图文报告', '超声检查正常(包括双胎)', '双胎加收',
-             '脏器灰阶立体成象', "超声检查(胎儿系统)", "胎儿心脏超声", '残余尿测定',
-             "介入操作", "床旁彩超加收", 'B超常规检', "脏器声学造影", '临床操作超声引导', '弹性成像']
+             '三维', "超声检查(胎儿系统)", "胎儿心脏超声", '残余尿测定',
+             "床旁彩超加收", "介入操作", 'B超常规检', "脏器声学造影", '临床操作超声引导', '弹性成像']
     return pd.Series(name='空白', dtype='int', data=None, index=col_n)
 
 
@@ -44,9 +44,10 @@ def one_do(neir_str, leix_type):
         #图文报告
         jishu['图文报告'] = 1
         if re.match(r'^\[(.*?),三维\]$', neir_str):
-            jishu['脏器灰阶立体成象'] = 1
+            jishu['三维'] = 1
         elif re.match(r'^\[(.*?),二维\]$', neir_str):
             if neir_str.count(r'卵泡测定'):
+                # print(neir_str)
                 jishu['超声检查正常(包括双胎)'] = 1
             elif neir_str.count(r'经阴道'):
                 jishu['腔内超声检查'] = 1
@@ -65,6 +66,8 @@ def one_do(neir_str, leix_type):
             elif neir_str.count(r'五个部位'):
                 jishu['超声检查正常(包括双胎)'] = 5
                 jishu['床旁彩超加收'] = 1
+            else:
+                jishu['超声检查正常(包括双胎)'] = 1
         else:
             print('缺少二维三维：', neir_str)
             jishu['超声检查正常(包括双胎)'] = 1
@@ -112,8 +115,10 @@ def do_it(file_str):
 
     zonghe = pd.concat(zonghe, axis=1).T # 合并表，转置表
     zonghe.loc['总和'] = zonghe.apply(lambda x: x.sum()) # 各列求和，添加新的行
-    print(zonghe)
+
     print(list(set(canyn)))
+    zonghe.replace(0,np.nan, inplace=True)
+    print(zonghe)
     zonghe.to_excel('统计好' + yue + '月.xlsx')
 
 
