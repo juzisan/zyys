@@ -3,7 +3,8 @@ import numpy as np
 import httpx
 import re
 import random
-
+import pyautogui as pyau
+import time
 '''
 '''
 r = httpx.get('https://www.baidu.com/')
@@ -69,3 +70,14 @@ def duoduo(xx):
 print(a1)
 print(a2)
 print(duoduo(6))
+
+pyau.screenshot('shot1.png',region=(240,400,620,30))
+time.sleep(0.75)
+
+pyau.screenshot('shot2.png',region=(240,400,620,30))
+
+while True:
+    localtime = time.localtime(time.time())
+
+    print(localtime)
+    time.sleep(2)
