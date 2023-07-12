@@ -100,7 +100,17 @@ def do_it(file_str):
     # 把患者类型列的值重新替换一下
     ori_df['检查时间'] = ori_df['检查时间'].dt.day # 检查时间只保留 day
     fenzu = ori_df.groupby(['检查时间']) # 按照检查时间分组
+    jiancxm = ori_df[ori_df["患者类型"]  == "门住"]
 
+    jiancxm = jiancxm["检查部位"].str.rstrip("彩超,二三维]")
+   # jiancxm = jiancxm["检查部位"].str.rstrip(",二维")subset=["检查部位"], 
+   
+    jiancxm.drop_duplicates( keep="first", inplace=True)
+    jiancxm = jiancxm.str.lstrip("[彩超")
+    jiancxm = jiancxm.sort_values(ascending=True)
+    jiancxm = jiancxm.reset_index(drop=True)
+    print(jiancxm)
+    jiancxm.to_excel("www.xlsx")
     zonghe = [] # 准备列表生成统计
     for i in range(1,32):
         try:
@@ -139,6 +149,7 @@ def main():
             yue = re.search(r'\d+', file_n)[0]
             do_it(file_n)
         else:
+            yue = re.search(r'\d+', file_n)[0]
             do_it(names[0])
     else:
         print('缺少文件')
