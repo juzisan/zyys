@@ -11,17 +11,14 @@ import re
 import time
 import numpy as np
 import pandas as pd
-
+from argument import col_n
 global yue, canyn
 
 canyn=[] #统计残余尿项目名称
 
 def k_s():
     """为了生成Series."""
-    col_n = ['体检例数', '腔内超声检查', '图文报告', '超声检查正常(包括双胎)',
-             '双胎加收', '三维', "超声检查(胎儿系统)", "胎儿心脏超声",
-             '残余尿测定', "床旁彩超加收", 'B超常规检', "脏器声学造影",
-             '临床操作超声引导', '弹性成像' "介入操作",]
+    # 从参数导入 col_n
     return pd.Series(name='空白', dtype='int', data=None, index=col_n)
 
 
