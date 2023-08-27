@@ -37,6 +37,7 @@ def timer(func):
 
 
 def one_do(neir_str, leix_type):
+    """逻辑处理部分."""
     jishu = k_s() # 复制Series
     if leix_type == '门住':
         #图文报告
@@ -99,15 +100,25 @@ def do_it(file_str):
     fenzu = ori_df.groupby(['检查时间']) # 按照检查时间分组
     jiancxm = ori_df[ori_df["患者类型"]  == "门住"]
 
-    jiancxm = jiancxm["检查部位"].str.rstrip("彩超,二三维]")
+    jiancxm = jiancxm["检查部位"].str.rstrip("彩超,二三维])胰脾早中晚期妊娠（右）左")
    # jiancxm = jiancxm["检查部位"].str.rstrip(",二维")subset=["检查部位"], 
    
+
+    jiancxm = jiancxm.str.lstrip("[彩超(")
     jiancxm.drop_duplicates( keep="first", inplace=True)
-    jiancxm = jiancxm.str.lstrip("[彩超")
     jiancxm = jiancxm.sort_values(ascending=True)
     jiancxm = jiancxm.reset_index(drop=True)
-    print(jiancxm)
-    jiancxm.to_excel("www.xlsx")
+    jiancxm = jiancxm.to_frame()
+    jiancxm_old = pd.read_excel(io="对比检查项目.xlsx", sheet_name=0, index_col=None )
+    print('\n----------\n')
+    set_diff_df = pd.concat([jiancxm,jiancxm_old], axis= 0)
+    #set_diff_df = set_diff_df.merge(jiancxm_old, how='cross')
+
+    set_diff_df.drop_duplicates(keep=False,inplace=True)
+    set_diff = set_diff_df['检查部位'].to_list()
+    print(*set_diff, sep = "\n") # 显示不一样的检查项目
+    print('\n----------\n')
+    # jiancxm.to_excel("对比检查项目.xlsx")
     zonghe = [] # 准备列表生成统计
     for i in range(1,32):
         try:
@@ -123,7 +134,7 @@ def do_it(file_str):
 
     zonghe = pd.concat(zonghe, axis=1).T # 合并表，转置表
     zonghe.loc['总和'] = zonghe.apply(lambda x: x.sum()) # 各列求和，添加新的行
-
+    print('\n----------\n')
     print(list(set(canyn)))
     zonghe.replace(0,np.nan, inplace=True)
     print(zonghe)
