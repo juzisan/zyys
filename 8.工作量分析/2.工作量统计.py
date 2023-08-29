@@ -11,8 +11,8 @@ import re
 import time
 import numpy as np
 import pandas as pd
-from argument import col_n
-global yue, canyn
+from argument import (col_n, jiancxm_old)
+global yue, canyn, jiancxm_old
 
 canyn=[] #统计残余尿项目名称
 
@@ -89,7 +89,7 @@ def one_do(neir_str, leix_type):
 
 def do_it(file_str):
     """程序开始."""
-    global yue,canyn
+    global yue,canyn,jiancxm_old
     ori_df = pd.read_excel(io=file_str, sheet_name=0, parse_dates=['检查时间'])
     ori_df = ori_df[['检查时间', '患者类型', '检查部位,检查方法',]]
     ori_df = ori_df.sort_values(by=['检查时间'], ascending=True)
@@ -107,18 +107,19 @@ def do_it(file_str):
     jiancxm = jiancxm.str.lstrip("[彩超(")
     jiancxm.drop_duplicates( keep="first", inplace=True)
     jiancxm = jiancxm.sort_values(ascending=True)
-    jiancxm = jiancxm.reset_index(drop=True)
-    jiancxm = jiancxm.to_frame()
-    jiancxm_old = pd.read_excel(io="对比检查项目.xlsx", sheet_name=0, index_col=None )
-    print('\n----------\n')
-    set_diff_df = pd.concat([jiancxm,jiancxm_old], axis= 0)
-    #set_diff_df = set_diff_df.merge(jiancxm_old, how='cross')
+    jiancxm = jiancxm.to_list()
 
-    set_diff_df.drop_duplicates(keep=False,inplace=True)
-    set_diff = set_diff_df['检查部位'].to_list()
-    print(*set_diff, sep = "\n") # 显示不一样的检查项目
+    jiancxm_old = jiancxm_old.split('\n')
+    new_old = set(jiancxm).difference(set(jiancxm_old))
+    print('新加：\n')
+    print(*new_old, sep = "\n") # 显示没有的检查项目
     print('\n----------\n')
-    # jiancxm.to_excel("对比检查项目.xlsx")
+    print('旧多：\n')
+    old_new = set(jiancxm_old).difference(set(jiancxm))
+    print(*old_new, sep = "\n") # 多余的检查项目
+    print('\n----------\n')
+
+
     zonghe = [] # 准备列表生成统计
     for i in range(1,32):
         try:
