@@ -11,8 +11,8 @@ import re
 import time
 import numpy as np
 import pandas as pd
-from argument import (col_n, jiancxm_old)
-global yue, canyn, jiancxm_old
+from argument import (col_n, jiancxm_old, jiancxm_tihuan,)
+global yue, canyn, jiancxm_old, jiancxm_tihuan
 
 canyn=[] #统计残余尿项目名称
 
@@ -105,11 +105,14 @@ def do_it(file_str):
    
 
     jiancxm = jiancxm.str.lstrip("[彩超(")
+    jiancxm.replace(jiancxm_tihuan,inplace=True)
     jiancxm.drop_duplicates( keep="first", inplace=True)
     jiancxm = jiancxm.sort_values(ascending=True)
     jiancxm = jiancxm.to_list()
 
-    jiancxm_old = jiancxm_old.split('\n')
+    jiancxm_old = list(filter(None, jiancxm_old.split('\n')))
+    # 删除list中的空元素,先用list转，否则不能正常比较
+    # print(jiancxm,'\n',jiancxm_old)
     new_old = set(jiancxm).difference(set(jiancxm_old))
     print('新加：\n')
     print(*new_old, sep = "\n") # 显示没有的检查项目
