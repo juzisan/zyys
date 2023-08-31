@@ -42,9 +42,10 @@ def one_do(neir_str, leix_type):
     if leix_type == '门住':
         #图文报告
         jishu['图文报告'] = 1
-        if re.match(r'^\[(.*?),三维\]$', neir_str):
+        if re.match(r'^\[(.*?),三维\]', neir_str):
             jishu['三维'] = 1
-        elif re.match(r'^\[(.*?),二维\]$', neir_str):
+            # 残尿三维不以三维结尾
+        elif re.match(r'^\[(.*?),二维\]', neir_str):
             if neir_str.count(r'卵泡测定'):
                 # print(neir_str)
                 jishu['超声检查正常(包括双胎)'] = 1
