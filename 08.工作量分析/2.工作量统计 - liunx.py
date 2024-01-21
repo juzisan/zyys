@@ -13,9 +13,9 @@ import numpy as np
 import pandas as pd
 from argument import (col_n, jiancxm_old, jiancxm_tihuan, )
 
-global yue, canyn, jiancxm_old, jiancxm_tihuan
+global yue, NAME_RESIDUAL_URINE, jiancxm_old, jiancxm_tihuan
 
-canyn = []  # 统计残余尿项目名称
+NAME_RESIDUAL_URINE = []  # 统计残余尿项目名称
 
 
 def k_s():
@@ -45,10 +45,10 @@ def one_do(neir_str, leix_type):
     if leix_type == '门住':
         # 图文报告
         jishu['图文报告'] = 1
-        if re.match(r'^\[(.*?),三维]', neir_str):
+        if re.match(r'^\[(.*?),三维\]', neir_str):
             jishu['三维'] = 1
             # 残尿三维不以三维结尾
-        elif re.match(r'^\[(.*?),二维]', neir_str):
+        elif re.match(r'^\[(.*?),二维\]', neir_str):
             if neir_str.count(r'卵泡测定'):
                 # print(neir_str)
                 jishu['超声检查正常(包括双胎)'] = 1
@@ -78,7 +78,7 @@ def one_do(neir_str, leix_type):
         # 残余尿
         if neir_str.count(r'残余'):
             jishu['残余尿测定'] = 1
-            canyn.append(neir_str)
+            NAME_RESIDUAL_URINE.append(neir_str)
         if re.match(r'^\[膀胱残余尿(.*?)$', neir_str):
             jishu['超声检查正常(包括双胎)'] = 0
             # jishu['脏器灰阶立体成象'] = 0
@@ -91,7 +91,7 @@ def one_do(neir_str, leix_type):
 
 def do_it(file_str):
     """程序开始."""
-    global yue, canyn, jiancxm_old
+    global yue, NAME_RESIDUAL_URINE, jiancxm_old
     ori_df = pd.read_excel(io=file_str, sheet_name=0, parse_dates=['检查时间'])
     ori_df = ori_df[['检查时间', '患者类型', '检查部位,检查方法', ]]
     ori_df = ori_df.sort_values(by=['检查时间'], ascending=True)
@@ -128,7 +128,7 @@ def do_it(file_str):
         try:
             jisruan = fenzu.get_group(i).apply(lambda row: one_do(row['检查部位'], row['患者类型']), axis=1)
             # groupby 对象需要用 get_group 才能调用,df用apply传递多个参数的时候要用lambda
-        except KeyError:
+        except:
             jishu = k_s()
             print(i, '日  没上班')
         else:

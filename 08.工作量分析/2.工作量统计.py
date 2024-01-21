@@ -45,10 +45,10 @@ def one_do(neir_str, leix_type):
     if leix_type == '门住':
         # 图文报告
         jishu['图文报告'] = 1
-        if re.match(r'^\[(.*?),三维\]', neir_str):
+        if re.match(r'^\[(.*?),三维]', neir_str):
             jishu['三维'] = 1
             # 残尿三维不以三维结尾
-        elif re.match(r'^\[(.*?),二维\]', neir_str):
+        elif re.match(r'^\[(.*?),二维]', neir_str):
             if neir_str.count(r'卵泡测定'):
                 # print(neir_str)
                 jishu['超声检查正常(包括双胎)'] = 1
@@ -128,7 +128,7 @@ def do_it(file_str):
         try:
             jisruan = fenzu.get_group(i).apply(lambda row: one_do(row['检查部位'], row['患者类型']), axis=1)
             # groupby 对象需要用 get_group 才能调用,df用apply传递多个参数的时候要用lambda
-        except:
+        except KeyError:
             jishu = k_s()
             print(i, '日  没上班')
         else:
@@ -161,7 +161,7 @@ def main():
         else:
             file_n = names[0]
         yue = re.search(r'\d+', file_n)[0]
-        do_it(names[0])
+        do_it(file_n)
     else:
         print('缺少文件')
 
