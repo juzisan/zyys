@@ -1,8 +1,6 @@
-import pandas as pd
 import numpy as np
-from DrissionPage import ChromiumPage
+import pandas as pd
 
-from DrissionPage.easy_set import set_paths
 
 # set_paths(browser_path=r'F:\Program Files\chrome-win')
 
@@ -10,6 +8,12 @@ from DrissionPage.easy_set import set_paths
 # page = ChromiumPage()
 # page.get('http://g1879.gitee.io/DrissionPageDocs')
 
+def count1():
+    aaa = False
+    print(aa)
+
+
+count1()
 
 p1 = -1
 p2 = [-1, 0, 2]
