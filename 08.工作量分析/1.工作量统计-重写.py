@@ -13,9 +13,13 @@ import numpy as np
 import pandas as pd
 from argument import (col_n, NAME_ITEM_OLD, NAME_ITEM_OLD_REPLACE, )
 
-global yue, NAME_RESIDUAL_URINE,  NAME_ITEM_OLD, NAME_ITEM_OLD_REPLACE
-
+yue = str(0)  # 月份
 NAME_RESIDUAL_URINE = []  # 统计残余尿项目名称
+NAME_ITEM_OLD = NAME_ITEM_OLD
+NAME_ITEM_OLD_REPLACE = NAME_ITEM_OLD_REPLACE
+
+
+# print(NAME_ITEM_OLD_REPLACE)
 
 
 def blank_series():
@@ -92,9 +96,47 @@ def one_do(txt_str, classify_person):
     return count_series
 
 
+def compare_items(name_item_new):
+    """对比新旧检查项目."""
+    # global NAME_ITEM_OLD_REPLACE
+    name_item_new = name_item_new["检查部位"].str.rstrip("彩超,一二三维]()胰脾早中晚期妊娠（右）左个部位")
+    name_item_new = name_item_new.str.lstrip("[彩超(")
+    name_item_new.drop_duplicates(keep="first", inplace=True)
+    name_item_new = name_item_new.sort_values(ascending=True)
+    print(type(name_item_new))
+    del_list = NAME_ITEM_OLD_REPLACE.split('\n')
+    name_item_new_replace = []
+    for i in del_list:
+        add_list = [j for j in i.split(' ') if j]
+        name_item_new_replace.append(add_list)
+    name_item_new_replace = name_item_new_replace[1:]
+    name_item_new_replace = dict(name_item_new_replace)  # 列表转字典
+    print(name_item_new_replace)
+    name_item_new.replace(NAME_ITEM_OLD_REPLACE, inplace=True)
+    print(name_item_new)
+    '''
+
+    name_item_new.replace(NAME_ITEM_OLD_REPLACE, inplace=True)
+    NAME_ITEM_OLD.drop_duplicates(keep="first", inplace=True)
+    NAME_ITEM_OLD = NAME_ITEM_OLD.sort_values(ascending=True)
+    NAME_ITEM_OLD = NAME_ITEM_OLD.to_list()
+
+    NAME_ITEM_OLD = list(filter(None, NAME_ITEM_OLD.split('\n')))
+    # 删除list中的空元素,先用list转，否则不能正常比较
+    # print(NAME_ITEM_OLD,'\n',NAME_ITEM_OLD)
+    new_old = set(NAME_ITEM_OLD).difference(set(NAME_ITEM_OLD))
+    print('新加：\n')
+    print(*new_old, sep="\n")  # 显示没有的检查项目
+    print('\n----------\n')
+    print('旧多：\n')
+    old_new = set(NAME_ITEM_OLD).difference(set(NAME_ITEM_OLD))
+    print(*old_new, sep="\n")  # 多余的检查项目
+    print('\n----------\n')'''
+
+
 def do_it(file_str):
     """程序开始."""
-    global yue, NAME_RESIDUAL_URINE, NAME_ITEM_OLD_old
+    # global yue, NAME_RESIDUAL_URINE, NAME_ITEM_OLD
     ori_df = pd.read_excel(io=file_str, sheet_name=0, parse_dates=['检查时间'])
     ori_df = ori_df[['检查时间', '患者类型', '检查部位,检查方法', ]]
     ori_df = ori_df.sort_values(by=['检查时间'], ascending=True)
@@ -103,49 +145,28 @@ def do_it(file_str):
     # 把患者类型列的值重新替换一下
     ori_df['检查时间'] = ori_df['检查时间'].dt.day  # 检查时间只保留 day
     group_day = ori_df.groupby(['检查时间'])  # 按照检查时间分组
-    name_item_new = ori_df[ori_df["患者类型"] == "门住"]
+    compare_items(ori_df[ori_df["患者类型"] == "门住"])  # 对比检查项目
 
-    name_item_new = name_item_new["检查部位"].str.rstrip("彩超,二三维])胰脾早中晚期妊娠（右）左")
-    # NAME_ITEM_OLD = NAME_ITEM_OLD["检查部位"].str.rstrip(",二维")subset=["检查部位"],
-
-    name_item_new = name_item_new.str.lstrip("[彩超(")
-    name_item_new.replace(NAME_ITEM_OLD_REPLACE, inplace=True)
-    NAME_ITEM_OLD.drop_duplicates(keep="first", inplace=True)
-    NAME_ITEM_OLD = NAME_ITEM_OLD.sort_values(ascending=True)
-    NAME_ITEM_OLD = NAME_ITEM_OLD.to_list()
-
-    NAME_ITEM_OLD_old = list(filter(None, NAME_ITEM_OLD_old.split('\n')))
-    # 删除list中的空元素,先用list转，否则不能正常比较
-    # print(NAME_ITEM_OLD,'\n',NAME_ITEM_OLD_old)
-    new_old = set(NAME_ITEM_OLD).difference(set(NAME_ITEM_OLD_old))
-    print('新加：\n')
-    print(*new_old, sep="\n")  # 显示没有的检查项目
-    print('\n----------\n')
-    print('旧多：\n')
-    old_new = set(NAME_ITEM_OLD_old).difference(set(NAME_ITEM_OLD))
-    print(*old_new, sep="\n")  # 多余的检查项目
-    print('\n----------\n')
-
-    zonghe = []  # 准备列表生成统计
+    combination_list = []  # 准备列表生成统计
     for i in range(1, 32):
         try:
-            jisruan = group_day.get_group(i).apply(lambda row: one_do(row['检查部位'], row['患者类型']), axis=1)
+            del_count = group_day.get_group(i).apply(lambda row: one_do(row['检查部位'], row['患者类型']), axis=1)
             # groupby 对象需要用 get_group 才能调用,df用apply传递多个参数的时候要用lambda
         except KeyError:
             count_series = blank_series()
             print(i, '日  没上班')
         else:
-            count_series = jisruan.sum()
+            count_series = del_count.sum()
         count_series.rename(i, inplace=True)  # 对 Series 重命名
-        zonghe.append(count_series)
+        combination_list.append(count_series)
 
-    zonghe = pd.concat(zonghe, axis=1).T  # 合并表，转置表
-    zonghe.loc['总和'] = zonghe.apply(lambda x: x.sum())  # 各列求和，添加新的行
+    combination_list = pd.concat(combination_list, axis=1).T  # 合并表，转置表
+    combination_list.loc['总和'] = combination_list.apply(lambda x: x.sum())  # 各列求和，添加新的行
     print('\n----------\n')
     print(list(set(NAME_RESIDUAL_URINE)))
-    zonghe.replace(0, np.nan, inplace=True)
-    print(zonghe)
-    zonghe.to_excel('统计好' + yue + '月.xlsx')
+    combination_list.replace(0, np.nan, inplace=True)
+    print(combination_list)
+    combination_list.to_excel('统计好' + yue + '月.xlsx')
 
 
 @timer
