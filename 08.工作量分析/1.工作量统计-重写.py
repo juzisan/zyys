@@ -14,13 +14,14 @@ import pandas as pd
 
 yue = str(0)  # 月份
 NAME_RESIDUAL_URINE = []  # 统计残余尿项目名称
+group_day = pd.DataFrame()  # 先生成一个空表
 
 
 def blank_series():
-    """为了生成Series."""
+    """为了生成Series，默认名字，省的重命名."""
     col_n = ['体检例数', '超声检查正常', '三维', '残余尿测定', '床旁彩超加收', '腔内超声检查', '大排畸', '胎儿心脏超声',
              'NT+产科三维', '双胎加收', '胃肠超声', '脑黑质测定', '弹性成像', '门住体图文报告']
-    return pd.Series(name='空白', dtype='int', data=None, index=col_n)
+    return pd.Series(name='空白', dtype='int', data=None, index=col_n, )
 
 
 def timer(func):
@@ -98,13 +99,26 @@ def one_do(txt_str, classify_person):
     elif classify_person == '体检':
         count_series['体检例数'] = txt_str.count(r'+') + 1
     else:
-        count_series['门住体图文报告'] = 0
         print('错误 ：患者类型')
     return count_series
 
 
+def one_day(day_num):
+    """统计一天的工作量."""
+    global group_day
+    try:
+        df_count = group_day.get_group(day_num).apply(lambda row: one_do(row['检查部位'], row['患者类型']), axis=1)
+        # groupby 对象需要用 get_group 才能调用,df用apply传递多个参数的时候要用lambda
+    except KeyError:  # 二选一，出错
+        print(day_num, '日  没上班')
+        return blank_series().rename(day_num)  # 重名名
+    else:  # 二选一，正确
+        return df_count.sum().rename(day_num)  # 重名名
+
+
 def do_it(file_str):
     """程序开始."""
+    global group_day
     ori_df = pd.read_excel(io=file_str, sheet_name=0, parse_dates=['检查时间'])
     ori_df = ori_df[['检查时间', '患者类型', '检查部位,检查方法', ]]
     ori_df = ori_df.sort_values(by=['检查时间'], ascending=True)
@@ -114,27 +128,14 @@ def do_it(file_str):
     ori_df['检查时间'] = ori_df['检查时间'].dt.day  # 检查时间只保留 day
     group_day = ori_df.groupby(['检查时间'])  # 按照检查时间分组
 
-    combination_list = []  # 准备列表生成统计
-    for i in range(1, 32):
-        try:
-            del_count = group_day.get_group(i).apply(lambda row: one_do(row['检查部位'], row['患者类型']), axis=1)
-            # groupby 对象需要用 get_group 才能调用,df用apply传递多个参数的时候要用lambda
-        except KeyError:
-            sum_series = blank_series()
-            print(i, '日  没上班')
-        else:
-            sum_series = del_count.sum()
-        sum_series.rename(i, inplace=True)  # 对 Series 重命名
-        combination_list.append(sum_series)
-
-    combination_list = pd.concat(combination_list, axis=1).T  # 合并表，转置表
-    combination_list.loc['总和'] = combination_list.apply(lambda x: x.sum())  # 各列求和，添加新的行
+    combination_pd = pd.concat(map(one_day, range(1, 32)), axis=1).T  # 合并表，转置表
+    combination_pd.loc['总和'] = combination_pd.apply(lambda x: x.sum())  # 各列求和，添加新的行
     print('\n----------\n')
     print(list(set(NAME_RESIDUAL_URINE)))
     print('\n----------\n')
-    combination_list.replace(0, np.nan, inplace=True)
-    print(combination_list)
-    combination_list.to_excel('统计好' + yue + '月.xlsx')
+    combination_pd.replace(0, np.nan, inplace=True)
+    print(combination_pd)
+    combination_pd.to_excel('统计好' + yue + '月.xlsx')
 
 
 @timer
