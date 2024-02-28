@@ -154,7 +154,7 @@ def main():
         else:
             file_n = names[0]
         yue = re.search(r'\d+', file_n)[0]
-        do_it(names[0])
+        do_it(file_n)
     else:
         print('缺少文件')
 
