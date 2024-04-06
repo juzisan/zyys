@@ -13,6 +13,9 @@ pip install opencv-contrib-python
 pip install dddd-ocr
 pip install pyautogui
 pip install pyperclip3
+4. chrome 版本 119.0.6045.160（正式版本） （64 位）
+5. OA 协同办公点完 绿色加号+
+6. 数据.xlsx 中的列名是    序号 人员编码    姓名  家庭住址
 """
 
 import time
