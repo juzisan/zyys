@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import pyautogui
 
 
 # set_paths(browser_path=r'F:\Program Files\chrome-win')
@@ -9,7 +10,7 @@ import pandas as pd
 # page.get('http://g1879.gitee.io/DrissionPageDocs')
 
 def count1():
-    aaa = False
+    aa = False
     print(aa)
 
 
@@ -50,3 +51,6 @@ except KeyError:
     aa = 'kong'
 
 print(aa)
+
+position_name_code = pyautogui.locateCenterOnScreen('1.png', grayscale=False)
+print(position_name_code)
