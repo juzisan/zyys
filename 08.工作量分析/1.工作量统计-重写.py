@@ -107,7 +107,7 @@ def one_day(day_num):
     """统计一天的工作量."""
     global group_day
     try:
-        df_count = group_day.get_group(day_num).apply(lambda row: one_do(row['检查部位'], row['患者类型']), axis=1)
+        df_count = group_day.get_group((day_num,)).apply(lambda row: one_do(row['检查部位'], row['患者类型']), axis=1)
         # groupby 对象需要用 get_group 才能调用,df用apply传递多个参数的时候要用lambda
     except KeyError:  # 二选一，出错
         print(day_num, '日  没上班')

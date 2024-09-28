@@ -10,10 +10,10 @@ This is a temporary script file.
 2. add.png
 3. 安装
 pip install opencv-contrib-python
-pip install dddd-ocr
+pip install ddddocr
 pip install pyautogui
 pip install pyperclip3
-4. Chromium 版本 127.0.6533.99（正式版本）for Linux Mint （64 位）
+4.  131.0beta Firefox Beta 
 5. OA 协同办公点完 绿色加号+
 6. 数据.xlsx 中 Sheet1 的列名是    序号 人员编码    姓名  家庭住址
 """
@@ -25,7 +25,7 @@ import pyclip
 
 # import ddddocr
 
-# ocr = ddddocr.DdddOcr(old=False)
+# ocr = ddddocr.DdddOcr()
 time.sleep(5)
 name_code_png: str = 'l1.png'  # "qing_shu_ru_ren_yuan.png"
 name_person_png: str = 'l2.png'  # "qing_shu_ru_xing_ming.png"
