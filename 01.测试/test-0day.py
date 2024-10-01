@@ -10,47 +10,28 @@ import pyautogui
 # page.get('http://g1879.gitee.io/DrissionPageDocs')
 
 def count1():
-    aa = False
+    aa = 'web'
     print(aa)
 
 
 count1()
 
-p1 = -1
-p2 = [-1, 0, 2]
-for i in p2:
-    if i:
-        print(i, '没找到')
-    else:
-        print(i, '找到了')
-print(f'{p2 = }')
 
-d_2 = pd.DataFrame(np.random.randn(6, 3), ['班级', '人数', '姓名', '平均分', '总分', '最高分'],
-                   columns=['ab', 'bc', 'cd'])
-d_2 = (d_2 * 100).round(0)
-print(d_2)
-d_2.loc[d_2['ab'] < 60, 'ab'] = 0
-d_2['行总和'] = d_2.sum(axis=1)
-print(d_2)
-s_1 = pd.Series(dtype=int, name='张三')
-s_1['一'] = 13
-s_1['二'] = 29
-s_1['三'] = 37
-# s_1.append([7])
-print(f'{s_1 = }')
-print('\033[1;32;40m start \033[0m')
-'''
-'''
-data = [[1, 2, 3], [1, 5, 6], [7, 8, 9]]
-df = pd.DataFrame(data, columns=["a", "b", "c"],
-                  index=["owl", "toucan", "eagle"])
-print(df)
-try:
-    aa = df.groupby(by=["a"]).get_group(5)
-except KeyError:
-    aa = 'kong'
 
-print(aa)
+def blank_series():
+    """为了生成Series，默认名字，省的重命名."""
+    col_n = ['体检例数', '超声检查正常', '脏器灰阶成像*2/3', '残余尿测定', '床旁彩超加收*5',
+             '腔内超声检查', '大排畸*6', '胎儿心脏超声*6', '脏器灰阶成像（NT+产科）', 
+             '双胎加收*3', '胃肠超声*3', '脑黑质测定*2', '弹性成像', '门住体图文报告',
+             '脏器声学造影*5', '临床操作超声引导*5', '介入操作例数*10', '消融例数*20', 
+             '误时工作量例数', '来源住培学员', '疑难病例会诊例数', '夜班例数', '扣罚金额']
+    return pd.Series(name='空白', dtype='int', data=None, index=col_n, )
 
-position_name_code = pyautogui.locateCenterOnScreen('1.png', grayscale=False)
-print(position_name_code)
+
+a1 = blank_series()
+a1['超声检查正常'] =1
+a2 = blank_series()
+a2['脏器灰阶成像*2/3'] =1
+a3 = blank_series()
+a3['体检例数'] =1
+print(a1,a2)

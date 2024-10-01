@@ -19,8 +19,11 @@ group_day = pd.DataFrame()  # 先生成一个空表
 
 def blank_series():
     """为了生成Series，默认名字，省的重命名."""
-    col_n = ['体检例数', '超声检查正常', '三维', '残余尿测定', '床旁彩超加收', '腔内超声检查', '大排畸', '胎儿心脏超声',
-             'NT+产科三维', '双胎加收', '胃肠超声', '脑黑质测定', '弹性成像', '门住体图文报告']
+    col_n = ['检查时间','体检例数', '超声检查正常', '脏器灰阶成像*2/3', '残余尿测定', '床旁彩超加收*5',
+             '腔内超声检查', '大排畸*6', '胎儿心脏超声*6', '脏器灰阶成像（NT+产科）', 
+             '双胎加收*3', '胃肠超声*3', '脑黑质测定*2', '弹性成像', '门住体图文报告',
+             '脏器声学造影*5', '临床操作超声引导*5', '介入操作例数*10', '消融例数*20', 
+             '误时工作量例数', '来源住培学员', '疑难病例会诊例数', '夜班例数', '扣罚金额']
     return pd.Series(name='空白', dtype='int', data=None, index=col_n, )
 
 
@@ -47,7 +50,7 @@ def one_do(txt_str, classify_person):
         # 图文报告
 
         if re.match(r'^\[(.*?),三维]', txt_str):
-            count_series['三维'] = 1
+            count_series['脏器灰阶成像*2/3'] = 1
             if txt_str.count(r'胎'):
                 # 胎儿三维再另加1个在疑难病例会诊例数里面
                 # 残尿三维不以三维结尾
@@ -63,23 +66,23 @@ def one_do(txt_str, classify_person):
                 count_series['腔内超声检查'] = 1
             elif txt_str.count(r'一个部位'):
                 count_series['超声检查正常'] = 1
-                count_series['床旁彩超加收'] = 1
+                count_series['床旁彩超加收*5'] = 1
                 count_series['门住体图文报告'] = 0
             elif txt_str.count(r'二个部位'):
                 count_series['超声检查正常'] = 2
-                count_series['床旁彩超加收'] = 1
+                count_series['床旁彩超加收*5'] = 1
                 count_series['门住体图文报告'] = 0
             elif txt_str.count(r'三个部位'):
                 count_series['超声检查正常'] = 3
-                count_series['床旁彩超加收'] = 1
+                count_series['床旁彩超加收*5'] = 1
                 count_series['门住体图文报告'] = 0
             elif txt_str.count(r'四个部位'):
                 count_series['超声检查正常'] = 4
-                count_series['床旁彩超加收'] = 1
+                count_series['床旁彩超加收*5'] = 1
                 count_series['门住体图文报告'] = 0
             elif txt_str.count(r'五个部位'):
                 count_series['超声检查正常'] = 5
-                count_series['床旁彩超加收'] = 1
+                count_series['床旁彩超加收*5'] = 1
                 count_series['门住体图文报告'] = 0
             else:
                 count_series['超声检查正常'] = 1
