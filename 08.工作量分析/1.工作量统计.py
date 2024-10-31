@@ -51,7 +51,7 @@ def one_do(txt_str, classify_person,txt_date):
         # 图文报告
 
         if re.match(r'^\[(.*?),三维]', txt_str):
-            count_series['三维'] = 1
+            count_series['脏器灰阶成像*2/3'] = 3
             if txt_str.count(r'胎'):
                 # 胎儿三维再另加1个在疑难病例会诊例数里面
                 # 残尿三维不以三维结尾
