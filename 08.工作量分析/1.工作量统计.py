@@ -101,7 +101,11 @@ def one_do(txt_str, classify_person,txt_date):
             count_series['超声检查正常'] = 0
             # count_series['脏器灰阶立体成象'] = 0
     elif classify_person == '体检':
-        count_series['体检例数'] = txt_str.count(r'+') + 1
+        if txt_str.count(r'肝纤维化和肝脂肪变测定'):
+            count_series['弹性成像'] = 1
+            count_series['门住体图文报告'] = 0
+        else:
+            count_series['体检例数'] = txt_str.count(r'+') + 1
     else:
         print('错误 ：患者类型')
     return count_series
