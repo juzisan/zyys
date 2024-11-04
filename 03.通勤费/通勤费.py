@@ -12,7 +12,7 @@ This is a temporary script file.
 pip install opencv-contrib-python
 pip install ddddocr
 pip install pyautogui
-pip install pyperclip3
+pip install pyperclip
 4.  131.0beta Firefox Beta 
 5. OA 协同办公点完 绿色加号+
 6. 数据.xlsx 中 Sheet1 的列名是    序号 人员编码    姓名  家庭住址
@@ -21,7 +21,7 @@ pip install pyperclip3
 import time
 import pandas as pd
 import pyautogui
-import pyclip
+import pyperclip
 
 # import ddddocr
 
@@ -47,7 +47,7 @@ def apply_add(txt_index, name_code, name_person, txt_address):
     pyautogui.click(position_name_person)
     time.sleep(0.3)
     pyautogui.press('tab')
-    pyclip.copy(txt_address)
+    pyperclip.copy(txt_address)
     pyautogui.hotkey('ctrl', 'v')
     pyautogui.press('tab')
     pyautogui.write('40')
