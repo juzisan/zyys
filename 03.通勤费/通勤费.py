@@ -13,7 +13,7 @@ pip install opencv-contrib-python
 pip install ddddocr
 pip install pyautogui
 pip install pyperclip
-4.  131.0beta Firefox Beta 
+4.  Chromium 版本 132.0.6818.0（开发者内部版本） （64 位）
 5. OA 协同办公点完 绿色加号+
 6. 数据.xlsx 中 Sheet1 的列名是    序号 人员编码    姓名  家庭住址
 """
@@ -29,9 +29,11 @@ import pyperclip
 time.sleep(5)
 name_code_png: str = 'l1.png'  # "qing_shu_ru_ren_yuan.png"
 name_person_png: str = 'l2.png'  # "qing_shu_ru_xing_ming.png"
-# Point | None
-position_name_code = pyautogui.locateCenterOnScreen(image=name_code_png)
-position_name_person = pyautogui.locateCenterOnScreen(image=name_person_png)
+
+# noinspection PyArgumentList
+position_name_code = pyautogui.locateCenterOnScreen(image=name_code_png)  #  image=name_code_png,)
+# noinspection PyArgumentList
+position_name_person = pyautogui.locateCenterOnScreen(image=name_person_png)  #  image=name_person_png)
 print(position_name_code, position_name_person)
 
 
