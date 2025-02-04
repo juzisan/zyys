@@ -44,10 +44,10 @@ def apply_add(txt_index, name_code, name_person, txt_address):
     pyautogui.click(position_name_code)
     # time.sleep(1)
     pyautogui.write(name_code)
-    time.sleep(0.1)
+    time.sleep(0.5)
 
     pyautogui.click(position_name_person)
-    time.sleep(0.3)
+    time.sleep(0.5)
     pyautogui.press('tab')
     pyperclip.copy(txt_address)
     pyautogui.hotkey('ctrl', 'v')
