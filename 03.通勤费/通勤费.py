@@ -39,17 +39,21 @@ print(position_name_code, position_name_person)
 
 def apply_add(txt_index, name_code, name_person, txt_address):
     """添加通勤费条目."""
-    print(txt_index, name_person)
+    print(txt_index, name_person, name_code)
 
     pyautogui.click(position_name_code)
-    # time.sleep(1)
-    pyautogui.write(name_code)
-    time.sleep(0.5)
+    time.sleep(0.7)
+    pyperclip.copy(name_code)
+    pyautogui.hotkey('ctrl', 'v')
+    # pyautogui.write(name_code)
+    time.sleep(0.7)
 
     pyautogui.click(position_name_person)
-    time.sleep(0.5)
+    time.sleep(1)
     pyautogui.press('tab')
     pyperclip.copy(txt_address)
+    # pyperclip.paste()
+    # print(pyperclip.paste())
     pyautogui.hotkey('ctrl', 'v')
     pyautogui.press('tab')
     pyautogui.write('40')
