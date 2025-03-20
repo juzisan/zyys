@@ -28,7 +28,7 @@ import pyperclip
 # ocr = ddddocr.DdddOcr()
 time.sleep(5)
 name_code_png: str = 'l1.png'  # "qing_shu_ru_ren_yuan.png"
-name_person_png: str = 'l2.png'  # "qing_shu_ru_xing_ming.png"
+name_person_png: str = 'l2.png'  # "qing_shu_ru_        40xing_ming.png"
 
 # noinspection PyArgumentList
 position_name_code = pyautogui.locateCenterOnScreen(image=name_code_png)  #  image=name_code_png,)
@@ -70,11 +70,14 @@ def main():
     dataframe_1 = pd.read_excel('数据.xlsx', sheet_name='Sheet1',
                                 dtype={'序号': str, '人员编码': str, '姓名': str, '家庭住址': str})
     # dataframe_1 = dataframe_1[:2]
-
+    dataframe_1 = dataframe_1.iloc[::-1]
     res = dataframe_1.values.tolist()
     for row in res:
         # print(*row)
-        apply_add(*row)
+        try:
+            apply_add(*row)
+        except:
+            break
 
 
 if __name__ == "__main__":

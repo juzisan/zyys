@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-import pyautogui
+# import pyautogui
 
 
 # set_paths(browser_path=r'F:\Program Files\chrome-win')
