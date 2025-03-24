@@ -14,7 +14,7 @@ pip install ddddocr
 pip install pyautogui
 pip install pyperclip
 4.  Chromium 版本 136.0.7070.0（开发者内部版本） （64 位）
-5. OA 协同办公点完 绿色加号+
+5. OA 协同办公点完 绿色加号 +
 6. 数据.xlsx 中 Sheet1 的列名是    序号 人员编码    姓名  家庭住址
 """
 
