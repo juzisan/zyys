@@ -1,21 +1,6 @@
-import numpy as np
+# import numpy as np
 import pandas as pd
 # import pyautogui
-
-
-# set_paths(browser_path=r'F:\Program Files\chrome-win')
-
-
-# page = ChromiumPage()
-# page.get('http://g1879.gitee.io/DrissionPageDocs')
-
-def count1():
-    aa = 'web'
-    print(aa)
-
-
-count1()
-
 
 
 def blank_series():
