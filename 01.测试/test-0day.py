@@ -1,21 +1,6 @@
-import numpy as np
+# import numpy as np
 import pandas as pd
 # import pyautogui
-
-
-# set_paths(browser_path=r'F:\Program Files\chrome-win')
-
-
-# page = ChromiumPage()
-# page.get('http://g1879.gitee.io/DrissionPageDocs')
-
-def count1():
-    aa = 'web'
-    print(aa)
-
-
-count1()
-
 
 
 def blank_series():
@@ -60,3 +45,17 @@ def if_name(get_name):
     if get_name not in lie_name_list: print('缺少：' + get_name)
 
 if_name('脏灰阶成像*2/3')
+
+li = ['床旁彩超(二个部位),二维','床旁彩超（三个部位）,二维','床旁彩超(一个部位),二维','床旁彩超,二维']
+
+for i in li:
+    txt_str = i
+
+    if  txt_str.count(r'三个部位'):
+        print('三个')
+    elif txt_str.count(r'一个部位'):
+        print('一个')
+    elif txt_str.count(r'床旁彩超') and not txt_str.count(r'个'):
+       # if txt_str.find(r'个') == -1:
+            print('床旁彩超')
+

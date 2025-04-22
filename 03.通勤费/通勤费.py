@@ -34,9 +34,9 @@ name_code_png: str = 'w1.png'  # "qing_shu_ru_ren_yuan.png"
 name_person_png: str = 'w2.png'  # "qing_shu_ru_xing_ming.png"
 
 # noinspection PyArgumentList
-position_name_code = pyautogui.locateCenterOnScreen(image=name_code_png)  #  image=name_code_png,)
+position_name_code = pyautogui.locateCenterOnScreen(image=name_code_png)  #  image=name_code_png
 # noinspection PyArgumentList
-position_name_person = pyautogui.locateCenterOnScreen(image=name_person_png)  #  image=name_person_png)
+position_name_person = pyautogui.locateCenterOnScreen(image=name_person_png)  #  image=name_person_png
 print(position_name_code, position_name_person)
 
 
