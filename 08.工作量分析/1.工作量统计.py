@@ -119,6 +119,11 @@ def one_do(txt_str, classify_person,txt_date):
                 count_series['超声检查正常'] = 5
                 count_series['床旁彩超加收*5'] = 1
                 count_series['门住体图文报告'] = 0
+            elif txt_str.count(r'床旁彩超') and not txt_str.count(r'个部位'):
+                # 腹彩加收
+                count_series['超声检查正常'] = 0
+                count_series['床旁彩超加收*5'] = 1
+                count_series['门住体图文报告'] = 0
             else:
                 count_series['超声检查正常'] = 1
                 if txt_str.count(r'双胎'):
