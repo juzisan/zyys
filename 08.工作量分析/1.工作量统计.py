@@ -12,8 +12,8 @@ import time
 import numpy as np
 import pandas as pd
 
-yue = str(0)  # 月份
-NAME_RESIDUAL_URINE = []  # 统计残余尿项目名称
+yue: str = str(0)  # 月份
+NAME_RESIDUAL_URINE:list[str] = [] # 统计残余尿项目名称
 group_day = pd.DataFrame()  # 先生成一个空表
 
 lie_name_str='''
@@ -59,13 +59,6 @@ def one_do(txt_str, classify_person,txt_date):
     """逻辑处理部分."""
     count_series = blank_series()  # 复制Series
     count_series['检查时间'] = txt_date
-
-
-    if_name('门住体图文报告')
-    if_name('超声检查正常')
-    if_name('床旁彩超加收*5')
-    if_name('残余尿测定')
-
     count_series['门住体图文报告'] = 1
 
     if classify_person == '门住':
@@ -75,7 +68,6 @@ def one_do(txt_str, classify_person,txt_date):
 
             if_name('脏器灰阶成像*2/3')
             count_series['脏器灰阶成像*2/3'] = 3
-
 
             if txt_str.count(r'胎'):
                 # 胎儿三维再另加1个在疑难病例会诊例数里面
@@ -135,6 +127,7 @@ def one_do(txt_str, classify_person,txt_date):
 
         # 残余尿
         if txt_str.count(r'残余'):
+            if_name('残余尿测定')
             count_series['残余尿测定'] = 1
             NAME_RESIDUAL_URINE.append(txt_str)
         if re.match(r'^\[膀胱残余尿(.*?)$', txt_str):
@@ -200,13 +193,23 @@ def main():
     global yue
     names = os.listdir(os.path.split(os.path.realpath(__file__))[0])
     names = [i for i in names if re.match(r'(.*?)\.(xls|xlsx)$', i)]
+    # 判断 列名对不对
+    if_name('门住体图文报告')
+    if_name('超声检查正常')
+    if_name('床旁彩超加收*5')
+
     if names:
         if len(names) > 1:
             print('请输入序号：')
             for i, value in enumerate(names):
                 print(i, '代表：  ', value)
             select_num = int(input("输入转换的序号："))
-            file_n = names[select_num]
+            if select_num in range(0, len(names) ):
+                file_n = names[select_num]
+            else:
+              print('请重新运行程序')
+              exit()
+
         else:
             file_n = names[0]
         yue = re.search(r'\d+', file_n)[0]
