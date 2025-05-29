@@ -6,9 +6,8 @@
 体检都是二维，多个项目中间用 【+】 号分割
 门诊住院区分二维三维，有些项目特殊，无法统计往诊
 """
-import os
-import re
-import time
+# import os
+import re, glob, time
 import numpy as np
 import pandas as pd
 
@@ -191,31 +190,33 @@ def do_it(file_str):
 def main():
     """程序开始."""
     global yue
-    names = os.listdir(os.path.split(os.path.realpath(__file__))[0])
-    names = [i for i in names if re.match(r'(.*?)\.(xls|xlsx)$', i)]
-    # 判断 列名对不对
+
     if_name('门住体图文报告')
     if_name('超声检查正常')
     if_name('床旁彩超加收*5')
 
-    if names:
-        if len(names) > 1:
+    names = glob.glob('*.xls') # 只搜索xls扩展名
+
+    match len(names):
+        case 0:
+            print('缺少文件')
+            exit()
+        case 1:
+            file_n = names[0]
+        case _ :
             print('请输入序号：')
             for i, value in enumerate(names):
                 print(i, '代表：  ', value)
             select_num = int(input("输入转换的序号："))
-            if select_num in range(0, len(names) ):
+            if select_num in range(0, len(names)):
                 file_n = names[select_num]
             else:
-              print('请重新运行程序')
-              exit()
+                print('请重新运行程序')
+                exit()
 
-        else:
-            file_n = names[0]
-        yue = re.search(r'\d+', file_n)[0]
-        do_it(file_n)
-    else:
-        print('缺少文件')
+    yue = re.search(r'\d+', file_n)[0]
+    do_it(file_n)
+
 
 
 if __name__ == "__main__":
