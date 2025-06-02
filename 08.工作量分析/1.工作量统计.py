@@ -10,14 +10,22 @@
 import re, glob, time
 import numpy as np
 import pandas as pd
+# from tqdm import tqdm
 
 
 NAME_RESIDUAL_URINE: list[str] = []  # 统计残余尿项目名称
 group_day = pd.DataFrame()  # 先生成一个空表
-c_pang_str: str = '床旁彩超加收*5'
-m_z_t_t_w_bao_gao_str: str = '门住体图文报告'
-c_s_j_c_zheng_chang_str: str = '超声检查正常'
 
+c_f_lie_name_list : list = [c_pang_str := '床旁彩超加收*5',
+                   m_z_t_t_w_bao_gao_str := '门住体图文报告',
+                   c_s_j_c_zheng_chang_str := '超声检查正常',
+                   san_wei_str := '脏器灰阶成像*2/3',
+                   can_ke_str := '脏器灰阶成像（NT+产科）',
+                   s_tai_str := '双胎加收*3',
+                   qiang_nei_str := '腔内超声检查',
+                   can_n_str := '残余尿测定',
+                   gan_xian_wei_str := '肝纤维化和肝脂肪变测定*2',
+                   ti_jian_str := '体检例数']
 
 lie_name_str = '''
 门住体图文报告	体检例数	肝纤维化和肝脂肪变测定*2	超声检查正常	脏器灰阶成像*2/3	残余尿测定	床旁彩超加收*5	腔内超声检查	"大排畸
@@ -32,7 +40,9 @@ lie_name_str = '''
 lie_name_str = lie_name_str.translate(str.maketrans({'"': None, '\n': None}))
 lie_name_list = lie_name_str.split('\t')
 lie_name_list.insert(0, '检查时间')
-print('列名：', lie_name_list)
+
+if que_set:= set(c_f_lie_name_list) - set(lie_name_list) :print('缺少的列名：    ', que_set)
+# a元素不在b元素里，非空为True，空的话跳过
 
 def timer(func):
     """计时器."""
@@ -54,10 +64,7 @@ def blank_series():
     return pd.Series(name='空白', dtype='int', data=None, index=lie_name_list, )
 
 
-def if_name(get_name):
-    if get_name not in lie_name_list:
-        print('缺少：  ' , get_name)
-        exit()
+
 
 def one_do(txt_str, classify_person, txt_date):
 
@@ -69,22 +76,18 @@ def one_do(txt_str, classify_person, txt_date):
         case '门住':
             # 图文报告
             if re.search(r'三维', txt_str):
-                if_name('脏器灰阶成像*2/3')
-                count_series['脏器灰阶成像*2/3'] = 3
+                count_series[san_wei_str] = 3
                 if txt_str.count(r'胎'):
                     # 胎儿三维再另加1个在疑难病例会诊例数里面
                     # 残尿三维不以三维结尾
-                    if_name('脏器灰阶成像（NT+产科）')
-                    count_series['脏器灰阶成像（NT+产科）'] = 1
+                    count_series[can_ke_str] = 1
                     if txt_str.count(r'双胎'):
-                        if_name('双胎加收*3')
-                        count_series['双胎加收*3'] = 1
+                        count_series[s_tai_str] = 1
             elif re.search(r'二维', txt_str):
                 if txt_str.count(r'卵泡测定'):
-                    count_series['超声检查正常'] = 1
+                    count_series[c_s_j_c_zheng_chang_str] = 1
                 elif txt_str.count(r'经阴道'):
-                    if_name('腔内超声检查')
-                    count_series['腔内超声检查'] = 1
+                    count_series[qiang_nei_str] = 1
                 elif txt_str.count(r'一个部位'):
                     count_series[c_s_j_c_zheng_chang_str] = 1
                     count_series[c_pang_str] = 1
@@ -113,26 +116,22 @@ def one_do(txt_str, classify_person, txt_date):
                 else:
                     count_series[c_s_j_c_zheng_chang_str] = 1
                     if txt_str.count(r'双胎'):
-                        if_name('双胎加收*3')
-                        count_series['双胎加收*3'] = 1
+                        count_series[s_tai_str] = 1
             else:
                 print('缺少二维三维：', txt_str)
                 count_series[c_s_j_c_zheng_chang_str] = 1
             # 残余尿
             if txt_str.count(r'残余'):
-                if_name('残余尿测定')
-                count_series['残余尿测定'] = 1
+                count_series[can_n_str] = 1
                 NAME_RESIDUAL_URINE.append(txt_str)
             if re.match(r'^\[膀胱残余尿(.*?)$', txt_str):
                 count_series[c_s_j_c_zheng_chang_str] = 0
         case '体检':
             if txt_str.count(r'肝纤维化和肝脂肪变测定'):
-                if_name('肝纤维化和肝脂肪变测定*2')
-                count_series['肝纤维化和肝脂肪变测定*2'] = 1
+                count_series[gan_xian_wei_str] = 1
                 count_series[m_z_t_t_w_bao_gao_str] = 0
             else:
-                if_name('体检例数')
-                count_series['体检例数'] = txt_str.count(r'+') + 1
+                count_series[ti_jian_str] = txt_str.count(r'+') + 1
         case lost_type:
             print(f'错误：缺少患者类型 --- {lost_type}')
 
@@ -190,21 +189,14 @@ def main():
         case 1:
             file_n = names[0]
         case _:
-            print('请输入序号：')
             for i, value in enumerate(names):
                 print(i, '代表：  ', value)
-            select_num = int(input("输入转换的序号："))
-            if select_num in range(0, len(names)):
+            try:
+                select_num = int(input("输入转换的序号（ e 退出）："))
                 file_n = names[select_num]
-            else:
+            except (ValueError , IndexError):
                 print('请重新运行程序')
                 exit()
-
-
-    x_d_list : list = [c_pang_str, m_z_t_t_w_bao_gao_str, c_s_j_c_zheng_chang_str]
-
-    for i in x_d_list:
-        if_name(i)
 
 
     yue = re.search(r'\d+', file_n)[0]

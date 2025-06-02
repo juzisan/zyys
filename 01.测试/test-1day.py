@@ -5,10 +5,18 @@ import re
 import random
 import pyautogui
 import time
+from bs4 import BeautifulSoup
 
 '''
 '''
-r = httpx.get('https://www.baidu.com/')
+r = httpx.get('https://tool.chinaz.com/dns/GitHub.com')
 print(r)
 
-sc = pyautogui.screenshot('screen.png')
+print(r.encoding)
+
+soup = BeautifulSoup(r.text, 'html.parser')
+aa = soup.find_all('a')
+## print(aa)
+### with open('example.txt', 'w') as f:
+
+    ##f.write(soup.text)

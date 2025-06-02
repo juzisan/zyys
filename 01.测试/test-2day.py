@@ -55,3 +55,19 @@ print('列名：', lie_name_list)
 if '床旁彩超加收*5' not in lie_name_list:
     print('错误：  床旁彩超加收')
     exit()
+
+x_d_list : list = [c_pang_str:= '床旁彩超加收*5',
+                   m_z_t_t_w_bao_gao_str:= '门住体图文报告',
+                   c_s_j_c_zheng_chang_str:= '超声检查正常',
+                   san_wei_str:= '脏器灰阶成像*2/3',
+                   can_ke_str:= '脏器灰阶成像（NT+产科）',
+                   s_tai_str:= '双胎加收*3']
+
+print(x_d_list)
+
+
+a = [0,2,3]
+b = [0,2,6,5,6,7,8,9,10]
+
+if que_set :=set(a) - set(b) : print('缺少的列名：    ', que_set) # 非空，空的话跳过
+
