@@ -37,3 +37,21 @@ match str(aaa):
     case lost_type:
         print(f'错误{lost_type}')
 print('wu')
+
+lie_name_str = '''
+门住体图文报告	体检例数	肝纤维化和肝脂肪变测定*2	超声检查正常	脏器灰阶成像*2/3	残余尿测定	床旁彩超加收*5	腔内超声检查	"大排畸
+*6"	"胎儿心脏超声
+*6"	脏器灰阶成像（NT+产科）	双胎加收*3	胃肠超声*3	"脑黑质测定
+*2"	脏器声学造影*5	"临床操作超声引导
+*5"	"介入操作例数
+*10"	消融例数*20	误时工作量例数	来源住培学员	疑难病例会诊例数	夜班例数	扣罚金额
+
+'''
+
+lie_name_str = lie_name_str.translate(str.maketrans({'"': None, '\n': None}))
+lie_name_list = lie_name_str.split('\t')
+lie_name_list.insert(0, '检查时间')
+print('列名：', lie_name_list)
+if '床旁彩超加收*5' not in lie_name_list:
+    print('错误：  床旁彩超加收')
+    exit()
