@@ -14,6 +14,7 @@ import pandas as pd
 
 
 NAME_RESIDUAL_URINE: list[str] = []  # 统计残余尿项目名称
+rest_day_list : list[int] = [] # 统计休息日
 group_day = pd.DataFrame()  # 先生成一个空表
 
 c_f_lie_name_list : list = [c_pang_str := '床旁彩超加收*5',
@@ -145,7 +146,7 @@ def one_day(day_num):
         df_count = group_day.get_group((day_num,))
         # group by 对象需要用 get_group 才能调用,df用apply传递多个参数的时候要用lambda
     except KeyError:  # 二选一，出错
-        print(day_num, '日  没上班')
+        rest_day_list.append(day_num)
         return blank_series().rename(day_num)  # 重名名
     else:  # 二选一，正确
         return df_count.sum().rename(day_num)  # 重名名
@@ -169,9 +170,8 @@ def do_it(file_str):
     combination_pd = pd.concat(map(one_day, range(1, 32)), axis=1).T  # 合并表，转置表
     del combination_pd['检查时间']
     combination_pd.loc['总和'] = combination_pd.apply(lambda x: x.sum())  # 各列求和，添加新的行    
-    print('\n----------\n')
-    print(list(set(NAME_RESIDUAL_URINE)))
-    print('\n----------\n')
+    print('\n残尿：', list(set(NAME_RESIDUAL_URINE)) )
+    print('休息：', rest_day_list, '  共 ', len(rest_day_list), '天\n')
     combination_pd.replace(0, np.nan, inplace=True)
     print(combination_pd)
     return combination_pd
