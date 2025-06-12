@@ -7,26 +7,27 @@
 门诊住院区分二维三维，有些项目特殊，无法统计往诊
 """
 # import os
-import re, glob, time
+import glob
+import re
+import time
+
 import numpy as np
 import pandas as pd
-# from tqdm import tqdm
 
-
-NAME_RESIDUAL_URINE: list[str] = []  # 统计残余尿项目名称
-rest_day_list : list[int] = [] # 统计休息日
+name_residual_urine: list[str] = []  # 统计残余尿项目名称
+rest_day_list: list[int] = []  # 统计休息日
 group_day = pd.DataFrame()  # 先生成一个空表
 
-c_f_lie_name_list : list = [c_pang_str := '床旁彩超加收*5',
-                   m_z_t_t_w_bao_gao_str := '门住体图文报告',
-                   c_s_j_c_zheng_chang_str := '超声检查正常',
-                   san_wei_str := '脏器灰阶成像*2/3',
-                   can_ke_str := '脏器灰阶成像（NT+产科）',
-                   s_tai_str := '双胎加收*3',
-                   qiang_nei_str := '腔内超声检查',
-                   can_n_str := '残余尿测定',
-                   gan_xian_wei_str := '肝纤维化和肝脂肪变测定*2',
-                   ti_jian_str := '体检例数']
+c_f_lie_name_list: list = [c_pang_str := '床旁彩超加收*5',
+                           m_z_t_t_w_bao_gao_str := '门住体图文报告',
+                           c_s_j_c_zheng_chang_str := '超声检查正常',
+                           san_wei_str := '脏器灰阶成像*2/3',
+                           can_ke_str := '脏器灰阶成像（NT+产科）',
+                           s_tai_str := '双胎加收*3',
+                           qiang_nei_str := '腔内超声检查',
+                           can_n_str := '残余尿测定',
+                           gan_xian_wei_str := '肝纤维化和肝脂肪变测定*2',
+                           ti_jian_str := '体检例数']
 
 lie_name_str = '''
 门住体图文报告	体检例数	肝纤维化和肝脂肪变测定*2	超声检查正常	脏器灰阶成像*2/3	残余尿测定	床旁彩超加收*5	腔内超声检查	"大排畸
@@ -42,8 +43,8 @@ lie_name_str = lie_name_str.translate(str.maketrans({'"': None, '\n': None}))
 lie_name_list = lie_name_str.split('\t')
 lie_name_list.insert(0, '检查时间')
 
-if que_set:= set(c_f_lie_name_list) - set(lie_name_list) :print('缺少的列名：    ', que_set)
-# a元素不在b元素里，非空为True，空的话跳过
+if que_set := set(c_f_lie_name_list) - set(lie_name_list): print('缺少的列名：    ', que_set)  # a元素不在b元素里，非空为True，空的话跳过
+
 
 def timer(func):
     """计时器."""
@@ -65,10 +66,7 @@ def blank_series():
     return pd.Series(name='空白', dtype='int', data=None, index=lie_name_list, )
 
 
-
-
 def one_do(txt_str, classify_person, txt_date):
-
     count_series = blank_series()  # 复制Series
     count_series['检查时间'] = txt_date
     count_series[m_z_t_t_w_bao_gao_str] = 1
@@ -124,7 +122,7 @@ def one_do(txt_str, classify_person, txt_date):
             # 残余尿
             if txt_str.count(r'残余'):
                 count_series[can_n_str] = 1
-                NAME_RESIDUAL_URINE.append(txt_str)
+                name_residual_urine.append(txt_str)
             if re.match(r'^\[膀胱残余尿(.*?)$', txt_str):
                 count_series[c_s_j_c_zheng_chang_str] = 0
         case '体检':
@@ -141,7 +139,7 @@ def one_do(txt_str, classify_person, txt_date):
 
 def one_day(day_num):
     """统计一天的工作量."""
-    global group_day
+    # global group_day
     try:
         df_count = group_day.get_group((day_num,))
         # group by 对象需要用 get_group 才能调用,df用apply传递多个参数的时候要用lambda
@@ -150,6 +148,7 @@ def one_day(day_num):
         return blank_series().rename(day_num)  # 重名名
     else:  # 二选一，正确
         return df_count.sum().rename(day_num)  # 重名名
+
 
 
 def do_it(file_str):
@@ -170,15 +169,13 @@ def do_it(file_str):
     combination_pd = pd.concat(map(one_day, range(1, 32)), axis=1).T  # 合并表，转置表
     del combination_pd['检查时间']
     combination_pd.loc['总和'] = combination_pd.apply(lambda x: x.sum())  # 各列求和，添加新的行    
-    print('\n残尿：', list(set(NAME_RESIDUAL_URINE)) )
+    print('\n残尿：', list(set(name_residual_urine)))
     print('休息：', rest_day_list, '  共 ', len(rest_day_list), '天\n')
     combination_pd.replace(0, np.nan, inplace=True)
     print(combination_pd)
     return combination_pd
 
-
-
-@timer
+# @timer
 def main():
     """程序开始."""
     names = glob.glob('*.xls')  # 只搜索xls扩展名
@@ -194,10 +191,9 @@ def main():
             try:
                 select_num = int(input("输入转换的序号（ e 退出）："))
                 file_n = names[select_num]
-            except (ValueError , IndexError):
+            except (ValueError, IndexError):
                 print('请重新运行程序')
                 exit()
-
 
     yue = re.search(r'\d+', file_n)[0]
     do_it(file_n).to_excel('统计好' + yue + '月.xlsx')

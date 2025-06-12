@@ -3,6 +3,7 @@ from sympy.abc import x, y
 from sympy import solve
 import pprint
 import re
+from tqdm import tqdm
 
 print(solve(x**2 - y, x, dict=True))
 
